@@ -418,50 +418,46 @@ export default function App() {
   const manualCash = cash.filter((l) => String(l.data).startsWith(period));
   const cashBalance = dreRevenue + manualCash.filter((l) => l.tipo === "entrada").reduce((s, l) => s + num(l.valor), 0) - manualCash.filter((l) => l.tipo === "saída").reduce((s, l) => s + num(l.valor), 0);
 
-  function Shell({ children }) {
-    return (
-      <>
-        <aside className={`sidebar ${menuOpen ? "open" : ""}`}>
-          <div className="profile">
-            <div className="avatar">{(settings.nome_usuario || "U").slice(0, 1).toUpperCase()}</div>
-            <div><strong>{settings.nome_usuario}</strong><span>PAINEL</span></div>
-          </div>
-          <nav>
-            {tabs.map(([id, label, Icon]) => (
-              <button key={id} className={`nav-item ${active === id ? "active" : ""}`} onClick={() => { setActive(id); setMenuOpen(false); }}>
-                <Icon /> {label}
-              </button>
-            ))}
-          </nav>
-        </aside>
-        <main className="app-shell">
-          <header className="topbar">
-            <button className="icon-button menu-button" onClick={() => setMenuOpen(true)}><span /><span /><span /></button>
-            <div><p className="eyebrow">Empresa Gestor Pro</p><h1>{pageTitle}</h1></div>
-            <div className="business-name">{settings.nome_negocio}</div>
-          </header>
-          {error && <div className="alert">{error}</div>}
-          {loading ? <div className="card empty">Carregando dados do Supabase...</div> : children}
-        </main>
-      </>
-    );
-  }
-
   return (
-    <Shell>
-      {active === "dashboard" && <Dashboard />}
-      {active === "pricing" && <Pricing />}
-      {active === "stock" && <Stock />}
-      {active === "clients" && <Clients />}
-      {active === "goals" && <Goals />}
-      {active === "cash" && <Cash />}
-      {active === "dre" && <Dre />}
-      {active === "insights" && <Insights />}
-      {active === "settings" && <SettingsView />}
-      {modal === "sale" && <SaleModal />}
-      {modal === "client" && <ClientModal />}
-      {modal === "goal" && <GoalModal />}
-    </Shell>
+    <>
+      <aside className={`sidebar ${menuOpen ? "open" : ""}`}>
+        <div className="profile">
+          <div className="avatar">{(settings.nome_usuario || "U").slice(0, 1).toUpperCase()}</div>
+          <div><strong>{settings.nome_usuario}</strong><span>PAINEL</span></div>
+        </div>
+        <nav>
+          {tabs.map(([id, label, Icon]) => (
+            <button key={id} className={`nav-item ${active === id ? "active" : ""}`} onClick={() => { setActive(id); setMenuOpen(false); }}>
+              <Icon /> {label}
+            </button>
+          ))}
+        </nav>
+      </aside>
+      <main className="app-shell">
+        <header className="topbar">
+          <button className="icon-button menu-button" onClick={() => setMenuOpen(true)}><span /><span /><span /></button>
+          <div><p className="eyebrow">Empresa Gestor Pro</p><h1>{pageTitle}</h1></div>
+          <div className="business-name">{settings.nome_negocio}</div>
+        </header>
+        {error && <div className="alert">{error}</div>}
+        {loading ? <div className="card empty">Carregando dados do Supabase...</div> : (
+          <>
+            {active === "dashboard" && Dashboard()}
+            {active === "pricing" && Pricing()}
+            {active === "stock" && Stock()}
+            {active === "clients" && Clients()}
+            {active === "goals" && Goals()}
+            {active === "cash" && Cash()}
+            {active === "dre" && Dre()}
+            {active === "insights" && Insights()}
+            {active === "settings" && SettingsView()}
+            {modal === "sale" && SaleModal()}
+            {modal === "client" && ClientModal()}
+            {modal === "goal" && GoalModal()}
+          </>
+        )}
+      </main>
+    </>
   );
 
   function Dashboard() {
@@ -604,7 +600,7 @@ export default function App() {
     const monthly = new Map();
     for (const s of sales) monthly.set(monthKey(s.criado_em), (monthly.get(monthKey(s.criado_em)) || 0) + num(s.total));
     const maxMonthly = Math.max(1, ...[...monthly.values()]);
-    return <div className="grid main-grid"><BestSellers /><div className="card"><h2>Faturamento por mês</h2><div className="chart" style={{ "--bars": monthly.size || 1 }}>{[...monthly.entries()].map(([label, total]) => <div className="bar-wrap" key={label}><div className="bar" data-tip={`${label} - ${fmtMoney(total)}`} style={{ height: `${Math.max(5, total / maxMonthly * 100)}%` }} /><span className="bar-label">{label}</span></div>)}</div><p className="muted">Ticket médio: {fmtMoney(sales.reduce((s, x) => s + num(x.total), 0) / Math.max(1, sales.length))}</p></div><div className="card"><h2>Vendas por forma de pagamento</h2><div className="list">{["Pix", "Crédito", "Débito", "Dinheiro"].map((p) => <div className="list-row" key={p}><span>{p}</span><strong>{sales.filter((s) => s.forma_pagamento === p).length}</strong></div>)}</div></div></div>;
+    return <div className="grid main-grid">{BestSellers()}<div className="card"><h2>Faturamento por mês</h2><div className="chart" style={{ "--bars": monthly.size || 1 }}>{[...monthly.entries()].map(([label, total]) => <div className="bar-wrap" key={label}><div className="bar" data-tip={`${label} - ${fmtMoney(total)}`} style={{ height: `${Math.max(5, total / maxMonthly * 100)}%` }} /><span className="bar-label">{label}</span></div>)}</div><p className="muted">Ticket médio: {fmtMoney(sales.reduce((s, x) => s + num(x.total), 0) / Math.max(1, sales.length))}</p></div><div className="card"><h2>Vendas por forma de pagamento</h2><div className="list">{["Pix", "Crédito", "Débito", "Dinheiro"].map((p) => <div className="list-row" key={p}><span>{p}</span><strong>{sales.filter((s) => s.forma_pagamento === p).length}</strong></div>)}</div></div></div>;
   }
 
   function SettingsView() {
