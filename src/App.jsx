@@ -466,21 +466,21 @@ export default function App() {
     return (
       <div className="grid">
         <section className="grid metrics">
-          <Metric label="Vendas do dia" value={`${todaySales.length} vendas`} sub={fmtMoney(totals.revenue)} />
-          <Metric label="Valor em caixa (estoque)" value={fmtMoney(totals.stockValue)} sub={`${products.length} produtos`} />
-          <Metric label="Lucro bruto (dia)" value={fmtMoney(totals.gross)} sub="Receita - custo" />
-          <Metric danger label="Lucro líquido (dia)" value={fmtMoney(totals.net)} sub={`Taxas: ${fmtMoney(totals.fees)}`} />
+          {Metric({ label: "Vendas do dia", value: `${todaySales.length} vendas`, sub: fmtMoney(totals.revenue) })}
+          {Metric({ label: "Valor em caixa (estoque)", value: fmtMoney(totals.stockValue), sub: `${products.length} produtos` })}
+          {Metric({ label: "Lucro bruto (dia)", value: fmtMoney(totals.gross), sub: "Receita - custo" })}
+          {Metric({ label: "Lucro líquido (dia)", value: fmtMoney(totals.net), sub: `Taxas: ${fmtMoney(totals.fees)}`, danger: true })}
         </section>
         <section className="grid main-grid">
           <div className="card">
-            <div className="toolbar"><h2>Vendas por período</h2><Segment value={chartMode} setValue={setChartMode} options={["Dia", "Semana", "Mês"]} /></div>
+            <div className="toolbar"><h2>Vendas por período</h2>{Segment({ value: chartMode, setValue: setChartMode, options: ["Dia", "Semana", "Mês"] })}</div>
             <div className="chart" style={{ "--bars": bars.length }}>
               {bars.map((b) => <div className="bar-wrap" key={b.label}><div className="bar" data-tip={`${b.label} - ${fmtMoney(b.total)}`} style={{ height: `${Math.max(5, (b.total / max) * 100)}%` }} /><span className="bar-label">{b.label}</span></div>)}
             </div>
           </div>
           <div className="card"><h2>Formas de pagamento (hoje)</h2><div className="list">{paymentTotals.map((p) => <div className="list-row" key={p.method}><div><strong>{p.method}</strong><p className="muted">Taxa: {p.rate}%</p></div><strong>{fmtMoney(p.total)}</strong></div>)}</div></div>
         </section>
-        <SalesTable title="Últimas vendas" rows={sales.slice(0, 10)} />
+        {SalesTable({ title: "Últimas vendas", rows: sales.slice(0, 10) })}
       </div>
     );
   }
@@ -498,11 +498,11 @@ export default function App() {
       <section className="grid two-col">
         <form className="card" onSubmit={saveProduct}>
           <div className="toolbar"><h2>{editingProduct ? "Editar produto" : "Novo produto"}</h2>{editingProduct && <button className="btn" type="button" onClick={() => { setEditingProduct(null); setProductForm(emptyProduct); }}>Cancelar edição</button>}</div>
-          <ProductFields />
+          {ProductFields()}
           <p className="muted">Margem real estimada: <strong>{realMargin().toFixed(1)}%</strong></p>
           <button className="btn primary full" type="submit">{editingProduct ? "Salvar alterações" : "Cadastrar produto"}</button>
         </form>
-        <div className="card"><h2>Produtos cadastrados ({products.length})</h2><ProductList /></div>
+        <div className="card"><h2>Produtos cadastrados ({products.length})</h2>{ProductList()}</div>
       </section>
     );
   }
@@ -539,9 +539,9 @@ export default function App() {
             <select value={stockFilters.status} onChange={(e) => setStockFilters({ ...stockFilters, status: e.target.value })}><option value="">Todos status</option><option>Em estoque</option><option>Sem estoque</option><option>Estoque baixo</option></select>
             <select value={stockFilters.sort} onChange={(e) => setStockFilters({ ...stockFilters, sort: e.target.value })}><option value="nome">Nome</option><option value="estoque">Estoque</option></select>
           </div>
-          <ProductsTable rows={filteredProducts} />
+          {ProductsTable({ rows: filteredProducts })}
         </div>
-        <div className="grid"><BestSellers /><RecentSales small /></div>
+        <div className="grid">{BestSellers()}{RecentSales()}</div>
       </section>
     );
   }
@@ -612,7 +612,7 @@ export default function App() {
   }
 
   function RecentSales() {
-    return <SalesTable title="Últimas vendas" rows={sales.slice(0, 5)} />;
+    return SalesTable({ title: "Últimas vendas", rows: sales.slice(0, 5) });
   }
 
   function BestSellers() {
