@@ -11,7 +11,32 @@ const TAXA_DA_FORMA = {
   Dinheiro: "taxa_dinheiro",
 };
 
-export const paymentRate = (settings, forma) => num(settings?.[TAXA_DA_FORMA[forma]]);
+export const PARCELAS_CREDITO = [1, 2, 3];
+
+/** Taxa do crédito conforme o número de parcelas (1x = taxa_credito; 2x e 3x próprias). */
+export function creditRate(settings, parcelas) {
+  const p = num(parcelas);
+  if (p >= 3) return num(settings?.taxa_credito_3x);
+  if (p === 2) return num(settings?.taxa_credito_2x);
+  return num(settings?.taxa_credito);
+}
+
+export const paymentRate = (settings, forma, parcelas) =>
+  forma === "Crédito" ? creditRate(settings, parcelas) : num(settings?.[TAXA_DA_FORMA[forma]]);
+
+/**
+ * A partir do preço à vista, quanto cobrar no cartão para receber esse valor líquido de
+ * taxa, por parcela (1x a 3x). fator = 1 − taxa/100; preço = à vista / fator.
+ */
+export function installmentPrices(precoAVista, settings) {
+  const base = num(precoAVista);
+  return PARCELAS_CREDITO.map((parcelas) => {
+    const taxa = creditRate(settings, parcelas);
+    const fator = 1 - taxa / 100;
+    const total = fator > 0 ? base / fator : base;
+    return { parcelas, taxa, total, valorParcela: total / parcelas };
+  });
+}
 
 export const unitCost = (produto) =>
   num(produto?.custo) + num(produto?.custos_variaveis) + num(produto?.frete);
@@ -48,10 +73,10 @@ export const salePayments = (venda) =>
     ? venda.pagamentos
     : [{ forma: venda?.forma_pagamento, valor: num(venda?.total) }];
 
-/** Taxa da venda somada parte a parte — cada forma tem a sua alíquota. */
+/** Taxa da venda somada parte a parte — cada forma (e parcela, no crédito) tem sua alíquota. */
 export const saleFees = (venda, settings) =>
   salePayments(venda).reduce(
-    (total, parte) => total + num(parte.valor) * (paymentRate(settings, parte.forma) / 100),
+    (total, parte) => total + num(parte.valor) * (paymentRate(settings, parte.forma, parte.parcelas) / 100),
     0,
   );
 

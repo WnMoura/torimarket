@@ -155,6 +155,7 @@ export function Painel({ email }) {
                 products={store.products}
                 archivedProducts={store.archivedProducts}
                 items={store.items}
+                settings={store.settings}
                 salvarProduto={store.salvarProduto}
                 excluirProduto={store.excluirProduto}
                 arquivarProduto={store.arquivarProduto}

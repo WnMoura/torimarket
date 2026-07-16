@@ -9,6 +9,8 @@ export const CONFIG_PADRAO = {
   nome_usuario: "Usuário",
   logo_url: "",
   taxa_credito: 4.5,
+  taxa_credito_2x: 0,
+  taxa_credito_3x: 0,
   taxa_debito: 2,
   taxa_pix: 0,
   taxa_dinheiro: 0,
@@ -229,6 +231,8 @@ export function useStore() {
           nome_usuario: form.nome_usuario,
           logo_url,
           taxa_credito: num(form.taxa_credito),
+          taxa_credito_2x: num(form.taxa_credito_2x),
+          taxa_credito_3x: num(form.taxa_credito_3x),
           taxa_debito: num(form.taxa_debito),
           taxa_pix: num(form.taxa_pix),
           taxa_dinheiro: num(form.taxa_dinheiro),
@@ -272,7 +276,12 @@ export function useStore() {
             produto_id: item.produto_id,
             quantidade: item.quantidade,
           })),
-          p_pagamentos: form.pagamentos.map((p) => ({ forma: p.forma, valor: num(p.valor) })),
+          p_pagamentos: form.pagamentos.map((p) => ({
+            forma: p.forma,
+            valor: num(p.valor),
+            // Parcelas só fazem sentido no crédito; nas outras formas nem vão para o banco.
+            ...(p.forma === "Crédito" ? { parcelas: num(p.parcelas) || 1 } : {}),
+          })),
         });
         if (erro) throw erro;
       }),
@@ -302,7 +311,12 @@ export function useStore() {
           p_contato: form.contato || null,
           p_observacoes: form.observacoes || null,
           p_data: form.data_venda || null,
-          p_pagamentos: form.pagamentos.map((p) => ({ forma: p.forma, valor: num(p.valor) })),
+          p_pagamentos: form.pagamentos.map((p) => ({
+            forma: p.forma,
+            valor: num(p.valor),
+            // Parcelas só fazem sentido no crédito; nas outras formas nem vão para o banco.
+            ...(p.forma === "Crédito" ? { parcelas: num(p.parcelas) || 1 } : {}),
+          })),
         });
         if (erro) throw erro;
       }),

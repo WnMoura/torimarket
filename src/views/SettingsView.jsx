@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { Field } from "../components/ui";
 
 const TAXAS = [
-  ["taxa_credito", "Taxa Crédito (%)"],
+  ["taxa_credito", "Taxa Crédito 1x (%)"],
+  ["taxa_credito_2x", "Taxa Crédito 2x (%)"],
+  ["taxa_credito_3x", "Taxa Crédito 3x (%)"],
   ["taxa_debito", "Taxa Débito (%)"],
   ["taxa_pix", "Taxa Pix (%)"],
   ["taxa_dinheiro", "Taxa Dinheiro (%)"],

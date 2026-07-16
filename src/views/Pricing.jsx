@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { Archive, ArchiveRestore, Pencil, Trash2 } from "lucide-react";
 import { Empty, Field, IconButton } from "../components/ui";
-import { realMargin, suggestedPrice } from "../lib/calc";
+import { installmentPrices, realMargin, suggestedPrice } from "../lib/calc";
 import { fmtMoney, num } from "../lib/format";
 
 const PRODUTO_VAZIO = {
@@ -31,6 +31,7 @@ export function Pricing({
   products,
   archivedProducts,
   items,
+  settings,
   salvarProduto,
   excluirProduto,
   arquivarProduto,
@@ -44,6 +45,8 @@ export function Pricing({
   const idsComVenda = useMemo(() => new Set(items.map((item) => item.produto_id)), [items]);
 
   const sugerido = suggestedPrice(form);
+  // Base à vista para o parcelado: o preço final digitado, ou o sugerido enquanto ele está em branco.
+  const parcelado = installmentPrices(num(form.preco_final) || sugerido, settings);
   const alterar = (campo) => (evento) => setForm({ ...form, [campo]: evento.target.value });
 
   function limpar() {
@@ -169,6 +172,24 @@ export function Pricing({
         <p className="muted">
           Margem real estimada: <strong>{realMargin(form).toFixed(1)}%</strong>
         </p>
+
+        <div>
+          <h3>Preço no cartão (à vista → parcelado)</h3>
+          <p className="muted" style={{ marginTop: "-6px" }}>
+            Valor a cobrar para receber o preço à vista líquido da taxa de crédito.
+          </p>
+          <div className="list">
+            {parcelado.map((linha) => (
+              <div className="list-row" key={linha.parcelas}>
+                <div className="grow">
+                  <strong>{linha.parcelas}x de {fmtMoney(linha.valorParcela)}</strong>
+                  <p className="muted">Taxa {linha.parcelas}x: {num(linha.taxa).toFixed(2)}%</p>
+                </div>
+                <strong>{fmtMoney(linha.total)}</strong>
+              </div>
+            ))}
+          </div>
+        </div>
 
         <button className="btn primary full" type="submit">
           {editandoId ? "Salvar alterações" : "Cadastrar produto"}

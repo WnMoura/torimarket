@@ -13,7 +13,11 @@ function formInicial(venda) {
     data_venda: dayKey(venda.criado_em),
     observacoes: venda.observacoes || "",
     // Cópia rasa das partes para não editar o objeto que veio do store.
-    pagamentos: salePayments(venda).map((p) => ({ forma: p.forma, valor: num(p.valor) })),
+    pagamentos: salePayments(venda).map((p) => ({
+      forma: p.forma,
+      valor: num(p.valor),
+      ...(p.forma === "Crédito" ? { parcelas: num(p.parcelas) || 1 } : {}),
+    })),
   };
 }
 

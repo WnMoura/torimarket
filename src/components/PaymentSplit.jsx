@@ -1,6 +1,6 @@
 import { Plus, Trash2 } from "lucide-react";
 import { Field, IconButton } from "./ui";
-import { FORMAS_PAGAMENTO } from "../lib/calc";
+import { FORMAS_PAGAMENTO, PARCELAS_CREDITO } from "../lib/calc";
 import { fmtMoney, num } from "../lib/format";
 
 /**
@@ -29,11 +29,31 @@ export function PaymentSplit({ pagamentos, setPagamentos, total }) {
       <div className="list">
         {pagamentos.map((parte, indice) => (
           <div className="sale-product-row" key={indice}>
-            <select value={parte.forma} onChange={(e) => atualizar(indice, "forma", e.target.value)}>
-              {FORMAS_PAGAMENTO.map((forma) => (
-                <option key={forma}>{forma}</option>
-              ))}
-            </select>
+            <div style={{ display: "flex", gap: 6 }}>
+              <select
+                style={{ flex: 1 }}
+                value={parte.forma}
+                onChange={(e) => atualizar(indice, "forma", e.target.value)}
+              >
+                {FORMAS_PAGAMENTO.map((forma) => (
+                  <option key={forma}>{forma}</option>
+                ))}
+              </select>
+              {parte.forma === "Crédito" && (
+                <select
+                  style={{ width: 74 }}
+                  title="Parcelas"
+                  value={parte.parcelas || 1}
+                  onChange={(e) => atualizar(indice, "parcelas", Number(e.target.value))}
+                >
+                  {PARCELAS_CREDITO.map((n) => (
+                    <option key={n} value={n}>
+                      {n}x
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
             <input
               type="number"
               step="0.01"
