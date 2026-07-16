@@ -31,7 +31,7 @@ export function SettingsView({ settings, salvarConfiguracoes }) {
       <h2>Configurações</h2>
 
       <Field label="Logo do negócio" full>
-        <div className="list-row">
+        <div className="list-row logo-row">
           {form.logo_url ? (
             <img className="thumb" src={form.logo_url} alt="Logo do negócio" />
           ) : (

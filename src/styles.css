@@ -105,6 +105,36 @@ button { cursor: pointer; }
   border-color: var(--line);
 }
 
+/* Botão de fechar o menu (só no mobile, onde a sidebar vira gaveta). */
+.sidebar-close {
+  display: none;
+}
+
+/* Fundo escuro atrás da gaveta: tocar nele fecha o menu. */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 19;
+}
+
+@media (min-width: 761px) {
+  .sidebar-overlay {
+    display: none;
+  }
+}
+
+/* Campo da logo: preview + input de arquivo lado a lado, com quebra quando aperta. */
+.logo-row {
+  flex-wrap: wrap;
+}
+
+.logo-row input[type="file"] {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.85rem;
+}
+
 .app-shell {
   margin-left: 276px;
   min-height: 100vh;
@@ -134,6 +164,9 @@ h2 { font-size: 1.1rem; margin-bottom: 16px; }
 h3 { font-size: 0.98rem; margin-bottom: 10px; }
 
 .business-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: var(--soft);
   background: var(--panel);
   border: 1px solid var(--line);
@@ -555,8 +588,16 @@ input[readonly] {
     padding-bottom: max(18px, env(safe-area-inset-bottom));
   }
 
+  /* Hambúrguer à esquerda, título centralizado de verdade (colunas laterais iguais). */
   .topbar {
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: 40px 1fr 40px;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .topbar > div {
+    text-align: center;
   }
 
   .business-name { display: none; }
@@ -567,6 +608,28 @@ input[readonly] {
     height: 2px;
     background: var(--text);
     margin: 2px 0;
+  }
+
+  .sidebar-close {
+    display: grid;
+    place-items: center;
+    margin: 0 0 6px auto;
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel-3);
+    color: var(--text);
+  }
+
+  .sidebar-close svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .logo-row {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .metrics,

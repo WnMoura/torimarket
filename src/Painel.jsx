@@ -11,6 +11,7 @@ import {
   Target,
   Users,
   Wallet,
+  X,
 } from "lucide-react";
 import { useStore } from "./hooks/useStore";
 import { sair } from "./hooks/useAuth";
@@ -70,6 +71,15 @@ export function Painel({ email }) {
   return (
     <>
       <aside className={`sidebar ${menuAberto ? "open" : ""}`}>
+        <button
+          className="sidebar-close"
+          type="button"
+          aria-label="Fechar menu"
+          onClick={() => setMenuAberto(false)}
+        >
+          <X />
+        </button>
+
         <div className="profile">
           <div className="avatar">
             {(store.settings.nome_usuario || "U").slice(0, 1).toUpperCase()}
@@ -100,6 +110,10 @@ export function Painel({ email }) {
         </nav>
       </aside>
 
+      {menuAberto && (
+        <div className="sidebar-overlay" onClick={() => setMenuAberto(false)} />
+      )}
+
       <main className="app-shell">
         <header className="topbar">
           <button
@@ -115,7 +129,7 @@ export function Painel({ email }) {
             <p className="eyebrow">Empresa Gestor Pro</p>
             <h1>{titulo}</h1>
           </div>
-          <div className="business-name" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div className="business-name">
             {store.settings.logo_url && (
               <img
                 src={store.settings.logo_url}
