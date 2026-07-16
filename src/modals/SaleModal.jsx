@@ -1,19 +1,19 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Field, IconButton, Modal } from "../components/ui";
-import { FORMAS_PAGAMENTO } from "../lib/calc";
+import { PaymentSplit } from "../components/PaymentSplit";
 import { fmtMoney, num, today } from "../lib/format";
 
 const VENDA_VAZIA = {
   cliente_id: "",
   nome_cliente: "",
   contato: "",
-  forma_pagamento: "Pix",
   data_venda: today(),
   observacoes: "",
   produto_id: "",
   quantidade: 1,
   itens: [],
+  pagamentos: [{ forma: "Pix", valor: 0 }],
 };
 
 export function SaleModal({ products, clients, registrarVenda, onError, onClose }) {
@@ -28,6 +28,14 @@ export function SaleModal({ products, clients, registrarVenda, onError, onClose 
   );
 
   const total = form.itens.reduce((soma, item) => soma + item.quantidade * item.preco_unitario, 0);
+
+  // Com uma forma só, o valor acompanha o total automaticamente; ao dividir, o usuário aloca à mão.
+  useEffect(() => {
+    setForm((atual) => {
+      if (atual.pagamentos.length !== 1 || num(atual.pagamentos[0].valor) === total) return atual;
+      return { ...atual, pagamentos: [{ ...atual.pagamentos[0], valor: total }] };
+    });
+  }, [total]);
 
   function adicionarItem() {
     const produto = produtoPorId[form.produto_id];
@@ -81,6 +89,16 @@ export function SaleModal({ products, clients, registrarVenda, onError, onClose 
 
     if (!form.itens.length) {
       onError("Adicione ao menos um produto à venda.");
+      return;
+    }
+
+    const somaPagamentos = form.pagamentos.reduce((soma, p) => soma + num(p.valor), 0);
+    if (form.pagamentos.some((p) => num(p.valor) <= 0)) {
+      onError("Cada forma de pagamento precisa de um valor maior que zero.");
+      return;
+    }
+    if (Math.abs(somaPagamentos - total) > 0.01) {
+      onError("As formas de pagamento precisam somar exatamente o total da venda.");
       return;
     }
 
@@ -145,14 +163,6 @@ export function SaleModal({ products, clients, registrarVenda, onError, onClose 
             </div>
           </Field>
 
-          <Field label="Forma de pagamento">
-            <select value={form.forma_pagamento} onChange={alterar("forma_pagamento")}>
-              {FORMAS_PAGAMENTO.map((forma) => (
-                <option key={forma}>{forma}</option>
-              ))}
-            </select>
-          </Field>
-
           <Field label="Data da venda">
             <input type="date" max={today()} value={form.data_venda} onChange={alterar("data_venda")} />
           </Field>
@@ -179,6 +189,12 @@ export function SaleModal({ products, clients, registrarVenda, onError, onClose 
         </div>
 
         <h2>Total: {fmtMoney(total)}</h2>
+
+        <PaymentSplit
+          pagamentos={form.pagamentos}
+          setPagamentos={(novos) => setForm((atual) => ({ ...atual, pagamentos: novos }))}
+          total={total}
+        />
 
         <button className="btn primary full" type="submit" disabled={enviando}>
           {enviando ? "Registrando..." : "Registrar venda"}

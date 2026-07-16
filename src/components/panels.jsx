@@ -1,9 +1,12 @@
 import { useMemo } from "react";
-import { Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
+import { paymentSummary } from "../lib/calc";
 import { dateBR, fmtMoney, num } from "../lib/format";
 import { Empty, IconButton } from "./ui";
 
-export function SalesTable({ title, sales, clients, excluirVenda }) {
+export function SalesTable({ title, sales, clients, excluirVenda, onEditarVenda }) {
+  const temAcoes = Boolean(excluirVenda || onEditarVenda);
+
   const nomePorId = useMemo(
     () => Object.fromEntries(clients.map((c) => [c.id, c.nome])),
     [clients],
@@ -32,7 +35,7 @@ export function SalesTable({ title, sales, clients, excluirVenda }) {
                 <th>Valor</th>
                 <th>Pagamento</th>
                 <th>Data</th>
-                {excluirVenda && <th />}
+                {temAcoes && <th />}
               </tr>
             </thead>
             <tbody>
@@ -46,17 +49,26 @@ export function SalesTable({ title, sales, clients, excluirVenda }) {
                       .join(", ") || "-"}
                   </td>
                   <td>{fmtMoney(venda.total)}</td>
-                  <td>{venda.forma_pagamento}</td>
+                  <td>{paymentSummary(venda)}</td>
                   <td>{dateBR(venda.criado_em)}</td>
-                  {excluirVenda && (
+                  {temAcoes && (
                     <td>
-                      <IconButton
-                        danger
-                        title="Excluir venda (devolve o estoque)"
-                        onClick={() => remover(venda)}
-                      >
-                        <Trash2 />
-                      </IconButton>
+                      <div className="icon-actions">
+                        {onEditarVenda && (
+                          <IconButton title="Editar venda" onClick={() => onEditarVenda(venda)}>
+                            <Pencil />
+                          </IconButton>
+                        )}
+                        {excluirVenda && (
+                          <IconButton
+                            danger
+                            title="Excluir venda (devolve o estoque)"
+                            onClick={() => remover(venda)}
+                          >
+                            <Trash2 />
+                          </IconButton>
+                        )}
+                      </div>
                     </td>
                   )}
                 </tr>

@@ -39,8 +39,38 @@ export const sumRevenue = (vendas) => vendas.reduce((total, v) => total + num(v.
 export const sumCost = (itens) =>
   itens.reduce((total, item) => total + num(item.quantidade) * itemCost(item), 0);
 
+/**
+ * Partes do pagamento da venda. Vendas gravadas antes do split (coluna pagamentos)
+ * caem numa parte única com a forma e o total que elas já tinham.
+ */
+export const salePayments = (venda) =>
+  Array.isArray(venda?.pagamentos) && venda.pagamentos.length
+    ? venda.pagamentos
+    : [{ forma: venda?.forma_pagamento, valor: num(venda?.total) }];
+
+/** Taxa da venda somada parte a parte — cada forma tem a sua alíquota. */
+export const saleFees = (venda, settings) =>
+  salePayments(venda).reduce(
+    (total, parte) => total + num(parte.valor) * (paymentRate(settings, parte.forma) / 100),
+    0,
+  );
+
 export const sumFees = (vendas, settings) =>
-  vendas.reduce((total, v) => total + num(v.total) * (paymentRate(settings, v.forma_pagamento) / 100), 0);
+  vendas.reduce((total, v) => total + saleFees(v, settings), 0);
+
+/** Quanto entrou por uma forma de pagamento, considerando o split de cada venda. */
+export const revenueByForma = (vendas, forma) =>
+  vendas.reduce(
+    (total, v) =>
+      total + salePayments(v).filter((p) => p.forma === forma).reduce((s, p) => s + num(p.valor), 0),
+    0,
+  );
+
+/** Resumo textual: "Pix" ou "Pix + Crédito" quando a venda foi dividida. */
+export const paymentSummary = (venda) => {
+  const partes = salePayments(venda);
+  return partes.length === 1 ? partes[0].forma || "-" : partes.map((p) => p.forma).join(" + ");
+};
 
 /** `chave` com 7 caracteres filtra por mês (AAAA-MM); com 10, por dia (AAAA-MM-DD). */
 export const salesIn = (vendas, chave) =>

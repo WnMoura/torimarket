@@ -13,7 +13,7 @@ function statusDoEstoque(produto) {
   return "Em estoque";
 }
 
-export function Stock({ products, sales, items, clients, onNovaVenda, excluirVenda }) {
+export function Stock({ products, sales, items, clients, onNovaVenda, excluirVenda, onEditarVenda }) {
   const [filtros, setFiltros] = useState({ categoria: "", status: "", ordem: "nome" });
 
   const categorias = useMemo(
@@ -111,6 +111,7 @@ export function Stock({ products, sales, items, clients, onNovaVenda, excluirVen
           sales={sales.slice(0, 5)}
           clients={clients}
           excluirVenda={excluirVenda}
+          onEditarVenda={onEditarVenda}
         />
       </div>
     </section>

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { BarChart, BestSellers } from "../components/panels";
-import { FORMAS_PAGAMENTO, sumRevenue } from "../lib/calc";
+import { FORMAS_PAGAMENTO, salePayments, sumRevenue } from "../lib/calc";
 import { fmtMoney, monthKey, monthLabel, num } from "../lib/format";
 
 export function Insights({ sales, items }) {
@@ -35,7 +35,9 @@ export function Insights({ sales, items }) {
           {FORMAS_PAGAMENTO.map((forma) => (
             <div className="list-row" key={forma}>
               <span>{forma}</span>
-              <strong>{sales.filter((v) => v.forma_pagamento === forma).length}</strong>
+              <strong>
+                {sales.filter((v) => salePayments(v).some((p) => p.forma === forma)).length}
+              </strong>
             </div>
           ))}
         </div>

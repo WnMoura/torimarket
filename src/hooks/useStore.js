@@ -266,13 +266,43 @@ export function useStore() {
         const { error: erro } = await supabase.rpc("registrar_venda", {
           p_cliente_id: clienteId,
           p_contato: form.contato || null,
-          p_forma_pagamento: form.forma_pagamento,
           p_observacoes: form.observacoes || null,
           p_data: form.data_venda || null,
           p_itens: form.itens.map((item) => ({
             produto_id: item.produto_id,
             quantidade: item.quantidade,
           })),
+          p_pagamentos: form.pagamentos.map((p) => ({ forma: p.forma, valor: num(p.valor) })),
+        });
+        if (erro) throw erro;
+      }),
+
+    /**
+     * Edita os metadados de uma venda já registrada — data, formas de pagamento,
+     * cliente/contato e observações — sem tocar nos itens nem no estoque. O split precisa
+     * continuar fechando com o total (que não muda aqui).
+     */
+    editarVenda: (vendaId, form) =>
+      executar(async () => {
+        let clienteId = form.cliente_id || null;
+
+        if (!clienteId && form.nome_cliente?.trim()) {
+          const criado = await supabase
+            .from("clientes")
+            .insert({ nome: form.nome_cliente.trim(), contato: form.contato || null })
+            .select()
+            .single();
+          if (criado.error) throw criado.error;
+          clienteId = criado.data.id;
+        }
+
+        const { error: erro } = await supabase.rpc("editar_venda", {
+          p_venda_id: vendaId,
+          p_cliente_id: clienteId,
+          p_contato: form.contato || null,
+          p_observacoes: form.observacoes || null,
+          p_data: form.data_venda || null,
+          p_pagamentos: form.pagamentos.map((p) => ({ forma: p.forma, valor: num(p.valor) })),
         });
         if (erro) throw erro;
       }),

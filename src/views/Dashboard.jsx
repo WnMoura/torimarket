@@ -5,6 +5,7 @@ import {
   FORMAS_PAGAMENTO,
   itemsOfSales,
   paymentRate,
+  revenueByForma,
   salesIn,
   sumCost,
   sumFees,
@@ -40,7 +41,7 @@ function seriesDeVendas(sales, modo) {
   return [...buckets.values()];
 }
 
-export function Dashboard({ sales, items, products, clients, settings, excluirVenda }) {
+export function Dashboard({ sales, items, products, clients, settings, excluirVenda, onEditarVenda }) {
   const [modo, setModo] = useState("Dia");
 
   const vendasDeHoje = useMemo(() => salesIn(sales, today()), [sales]);
@@ -63,7 +64,7 @@ export function Dashboard({ sales, items, products, clients, settings, excluirVe
   const porFormaDePagamento = FORMAS_PAGAMENTO.map((forma) => ({
     forma,
     taxa: paymentRate(settings, forma),
-    total: sumRevenue(vendasDeHoje.filter((v) => v.forma_pagamento === forma)),
+    total: revenueByForma(vendasDeHoje, forma),
   }));
 
   return (
@@ -118,6 +119,7 @@ export function Dashboard({ sales, items, products, clients, settings, excluirVe
         sales={sales.slice(0, 10)}
         clients={clients}
         excluirVenda={excluirVenda}
+        onEditarVenda={onEditarVenda}
       />
     </div>
   );

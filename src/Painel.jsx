@@ -27,6 +27,7 @@ import { Pricing } from "./views/Pricing";
 import { SettingsView } from "./views/SettingsView";
 import { Stock } from "./views/Stock";
 import { ClientModal } from "./modals/ClientModal";
+import { EditSaleModal } from "./modals/EditSaleModal";
 import { GoalModal } from "./modals/GoalModal";
 import { SaleModal } from "./modals/SaleModal";
 
@@ -50,6 +51,7 @@ export function Painel({ email }) {
   const [menuAberto, setMenuAberto] = useState(false);
   const [modal, setModal] = useState(null);
   const [clienteEmEdicao, setClienteEmEdicao] = useState(null);
+  const [vendaEmEdicao, setVendaEmEdicao] = useState(null);
   const [periodo, setPeriodo] = useState(currentMonth());
 
   const titulo = ABAS.find(([id]) => id === aba)?.[1] || "Início";
@@ -57,6 +59,12 @@ export function Painel({ email }) {
   function fecharModal() {
     setModal(null);
     setClienteEmEdicao(null);
+    setVendaEmEdicao(null);
+  }
+
+  function editarVenda(venda) {
+    setVendaEmEdicao(venda);
+    setModal("editSale");
   }
 
   return (
@@ -134,6 +142,7 @@ export function Painel({ email }) {
                 clients={store.clients}
                 settings={store.settings}
                 excluirVenda={store.excluirVenda}
+                onEditarVenda={editarVenda}
               />
             )}
 
@@ -160,6 +169,7 @@ export function Painel({ email }) {
                 clients={store.clients}
                 onNovaVenda={() => setModal("sale")}
                 excluirVenda={store.excluirVenda}
+                onEditarVenda={editarVenda}
               />
             )}
 
@@ -241,6 +251,16 @@ export function Painel({ email }) {
 
         {modal === "goal" && (
           <GoalModal salvarMeta={store.salvarMeta} onError={store.setError} onClose={fecharModal} />
+        )}
+
+        {modal === "editSale" && vendaEmEdicao && (
+          <EditSaleModal
+            venda={vendaEmEdicao}
+            clients={store.clients}
+            editarVenda={store.editarVenda}
+            onError={store.setError}
+            onClose={fecharModal}
+          />
         )}
       </main>
     </>
