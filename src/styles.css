@@ -21,9 +21,12 @@
 body {
   margin: 0;
   min-height: 100vh;
+  min-height: 100dvh;
   background: var(--bg);
   color: var(--text);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
 }
 
 button, input, select, textarea {
@@ -105,6 +108,7 @@ button { cursor: pointer; }
 .app-shell {
   margin-left: 276px;
   min-height: 100vh;
+  min-height: 100dvh;
   padding: 24px;
 }
 
@@ -447,6 +451,14 @@ input[readonly] {
 
 .grow {
   flex: 1;
+  min-width: 0;
+}
+
+/* Nome de produto/cliente longo não pode empurrar a largura e criar scroll horizontal. */
+.list-row strong,
+.list-row p,
+.list-row span {
+  overflow-wrap: anywhere;
 }
 
 .sale-product-row {
@@ -490,6 +502,7 @@ input[readonly] {
   transform: translate(-50%, -50%);
   width: min(760px, calc(100vw - 28px));
   max-height: calc(100vh - 36px);
+  max-height: calc(100dvh - 36px);
   overflow: auto;
   background: var(--panel);
   border: 1px solid var(--line);
@@ -527,6 +540,8 @@ input[readonly] {
   .sidebar {
     transform: translateX(-100%);
     transition: transform 0.22s ease;
+    padding-top: max(22px, env(safe-area-inset-top));
+    padding-left: max(16px, env(safe-area-inset-left));
   }
 
   .sidebar.open { transform: translateX(0); }
@@ -534,6 +549,10 @@ input[readonly] {
   .app-shell {
     margin-left: 0;
     padding: 18px;
+    padding-top: max(18px, env(safe-area-inset-top));
+    padding-left: max(18px, env(safe-area-inset-left));
+    padding-right: max(18px, env(safe-area-inset-right));
+    padding-bottom: max(18px, env(safe-area-inset-bottom));
   }
 
   .topbar {
@@ -559,8 +578,32 @@ input[readonly] {
   .sale-product-row { grid-template-columns: 1fr 74px 42px; }
 }
 
+/* Telas bem pequenas (iPhone SE, celulares ~360px): mais folga de espaço. */
+@media (max-width: 480px) {
+  .app-shell { padding: 14px; padding-bottom: max(14px, env(safe-area-inset-bottom)); }
+  .card { padding: 14px; }
+  .topbar { gap: 12px; margin-bottom: 18px; }
+  h1 { font-size: 1.5rem; }
+
+  .metric-card { min-height: auto; }
+  .metric-label { margin-bottom: 8px; }
+
+  /* Tabela mais compacta para caber mais colunas antes de precisar rolar. */
+  table { min-width: 560px; }
+  th, td { padding: 10px 9px; font-size: 0.9rem; }
+
+  .chart { height: 220px; }
+
+  .modal { padding: 16px; padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+  .modal-head { margin-bottom: 14px; }
+
+  .segmented button { padding: 7px 10px; }
+  .sale-product-row { grid-template-columns: 1fr 68px 40px; gap: 8px; }
+}
+
 .login-shell {
   min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
   place-items: center;
   padding: 24px;
