@@ -1,7 +1,15 @@
 import { Plus, Trash2 } from "lucide-react";
 import { Empty, IconButton } from "../components/ui";
 import { goalIsMoney, goalProgress } from "../lib/calc";
-import { fmtInt, fmtMoney, num } from "../lib/format";
+import { dateBR, fmtInt, fmtMoney, num } from "../lib/format";
+
+/** "Mensal", ou "12/12/2025 → 25/12/2025" quando a meta tem intervalo próprio. */
+function rotuloPeriodo(meta) {
+  if (meta.periodo === "Personalizado" && meta.data_inicio && meta.data_fim) {
+    return `${dateBR(meta.data_inicio)} → ${dateBR(meta.data_fim)}`;
+  }
+  return meta.periodo;
+}
 
 export function Goals({ goals, sales, clients, excluir, onNova }) {
   return (
@@ -29,7 +37,7 @@ export function Goals({ goals, sales, clients, excluir, onNova }) {
               <div className="list-row" key={meta.id}>
                 <div className="grow">
                   <strong>
-                    {meta.tipo} - {meta.periodo}
+                    {meta.tipo} - {rotuloPeriodo(meta)}
                   </strong>
                   <p className="muted">
                     {meta.descricao || "Sem descrição"} - {fmt(alcancado)} de {fmt(alvo)} (

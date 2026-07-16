@@ -10,6 +10,7 @@ import {
   Tag,
   Target,
   Users,
+  Wallet,
 } from "lucide-react";
 import { useStore } from "./hooks/useStore";
 import { sair } from "./hooks/useAuth";
@@ -19,6 +20,7 @@ import { Cash } from "./views/Cash";
 import { Clients } from "./views/Clients";
 import { Dashboard } from "./views/Dashboard";
 import { Dre } from "./views/Dre";
+import { Faturamento } from "./views/Faturamento";
 import { Goals } from "./views/Goals";
 import { Insights } from "./views/Insights";
 import { Pricing } from "./views/Pricing";
@@ -30,6 +32,7 @@ import { SaleModal } from "./modals/SaleModal";
 
 const ABAS = [
   ["dashboard", "Início", Grid3X3],
+  ["faturamento", "Faturamento", Wallet],
   ["pricing", "Precificação", Tag],
   ["stock", "Produtos & Estoque", Boxes],
   ["clients", "Clientes", Users],
@@ -123,6 +126,10 @@ export function Painel({ email }) {
                 settings={store.settings}
                 excluirVenda={store.excluirVenda}
               />
+            )}
+
+            {aba === "faturamento" && (
+              <Faturamento sales={store.sales} items={store.items} settings={store.settings} />
             )}
 
             {aba === "pricing" && (
@@ -223,7 +230,9 @@ export function Painel({ email }) {
           />
         )}
 
-        {modal === "goal" && <GoalModal salvarMeta={store.salvarMeta} onClose={fecharModal} />}
+        {modal === "goal" && (
+          <GoalModal salvarMeta={store.salvarMeta} onError={store.setError} onClose={fecharModal} />
+        )}
       </main>
     </>
   );

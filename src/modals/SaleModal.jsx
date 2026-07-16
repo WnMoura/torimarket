@@ -2,13 +2,14 @@ import { useMemo, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Field, IconButton, Modal } from "../components/ui";
 import { FORMAS_PAGAMENTO } from "../lib/calc";
-import { fmtMoney, num } from "../lib/format";
+import { fmtMoney, num, today } from "../lib/format";
 
 const VENDA_VAZIA = {
   cliente_id: "",
   nome_cliente: "",
   contato: "",
   forma_pagamento: "Pix",
+  data_venda: today(),
   observacoes: "",
   produto_id: "",
   quantidade: 1,
@@ -16,7 +17,9 @@ const VENDA_VAZIA = {
 };
 
 export function SaleModal({ products, clients, registrarVenda, onError, onClose }) {
-  const [form, setForm] = useState(VENDA_VAZIA);
+  // today() no inicializador, não em VENDA_VAZIA: garante a data de hoje mesmo se a aba
+  // ficou aberta virando o dia.
+  const [form, setForm] = useState(() => ({ ...VENDA_VAZIA, data_venda: today() }));
   const [enviando, setEnviando] = useState(false);
 
   const produtoPorId = useMemo(
@@ -148,6 +151,10 @@ export function SaleModal({ products, clients, registrarVenda, onError, onClose 
                 <option key={forma}>{forma}</option>
               ))}
             </select>
+          </Field>
+
+          <Field label="Data da venda">
+            <input type="date" max={today()} value={form.data_venda} onChange={alterar("data_venda")} />
           </Field>
 
           <Field label="Observações" full>

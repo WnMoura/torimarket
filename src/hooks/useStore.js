@@ -204,9 +204,16 @@ export function useStore() {
 
     salvarMeta: (form) =>
       executar(async () => {
-        const { error: erro } = await supabase
-          .from("metas")
-          .insert({ ...form, valor_alvo: num(form.valor_alvo) });
+        const personalizada = form.periodo === "Personalizado";
+        const { error: erro } = await supabase.from("metas").insert({
+          tipo: form.tipo,
+          descricao: form.descricao || null,
+          periodo: form.periodo,
+          valor_alvo: num(form.valor_alvo),
+          // Datas só valem para a meta personalizada; nas de período fixo ficam nulas.
+          data_inicio: personalizada ? form.data_inicio || null : null,
+          data_fim: personalizada ? form.data_fim || null : null,
+        });
         if (erro) throw erro;
       }),
 
@@ -256,6 +263,7 @@ export function useStore() {
           p_contato: form.contato || null,
           p_forma_pagamento: form.forma_pagamento,
           p_observacoes: form.observacoes || null,
+          p_data: form.data_venda || null,
           p_itens: form.itens.map((item) => ({
             produto_id: item.produto_id,
             quantidade: item.quantidade,

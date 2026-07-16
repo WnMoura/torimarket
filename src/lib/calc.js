@@ -1,8 +1,8 @@
-import { dayKey, monthKey, num } from "./format.js";
+import { asDate, dayKey, monthKey, monthLabel, num } from "./format.js";
 
 export const FORMAS_PAGAMENTO = ["Pix", "Crédito", "Débito", "Dinheiro"];
 export const TIPOS_META = ["Faturamento R$", "Número de vendas", "Novos clientes"];
-export const PERIODOS_META = ["Diário", "Semanal", "Mensal", "Anual"];
+export const PERIODOS_META = ["Diário", "Semanal", "Mensal", "Anual", "Personalizado"];
 
 const TAXA_DA_FORMA = {
   Crédito: "taxa_credito",
@@ -51,6 +51,36 @@ export function itemsOfSales(itens, vendas) {
   return itens.filter((item) => ids.has(item.venda_id));
 }
 
+/**
+ * Lucro líquido (receita − custo − taxas) de cada mês que teve venda, em ordem
+ * cronológica, já com a variação percentual sobre o mês anterior. Base do gráfico de
+ * tendência da aba Faturamento. `variacao` é null no primeiro mês e quando o mês
+ * anterior fechou em zero — não há percentual comparável nesses casos.
+ */
+export function netProfitByMonth(vendas, itens, settings) {
+  const meses = new Map();
+
+  for (const venda of vendas) {
+    const chave = monthKey(venda.criado_em);
+    if (!meses.has(chave)) {
+      meses.set(chave, { chave, label: monthLabel(venda.criado_em), vendas: [] });
+    }
+    meses.get(chave).vendas.push(venda);
+  }
+
+  const ordenados = [...meses.values()].sort((a, b) => a.chave.localeCompare(b.chave));
+
+  let anterior = null;
+  return ordenados.map((mes) => {
+    const itensDoMes = itemsOfSales(itens, mes.vendas);
+    const liquido = sumRevenue(mes.vendas) - sumCost(itensDoMes) - sumFees(mes.vendas, settings);
+    const variacao =
+      anterior === null || anterior === 0 ? null : ((liquido - anterior) / Math.abs(anterior)) * 100;
+    anterior = liquido;
+    return { label: mes.label, liquido, variacao };
+  });
+}
+
 /** Início do período corrente — "Mensal" é o mês vigente, não os últimos 30 dias. */
 export function periodStart(periodo, agora = new Date()) {
   const ano = agora.getFullYear();
@@ -67,9 +97,29 @@ export function periodStart(periodo, agora = new Date()) {
   return new Date(ano, mes, 1);
 }
 
-export function goalProgress(meta, { vendas, clientes }) {
+/**
+ * Filtro de data da meta. Período "Personalizado" usa o intervalo [data_inicio, data_fim]
+ * (fim inclusivo, até o último instante do dia). Os demais continuam sendo a janela
+ * corrente do período — mês vigente, semana vigente etc.
+ */
+export function metaWindow(meta) {
+  if (meta.periodo === "Personalizado" && meta.data_inicio && meta.data_fim) {
+    const inicio = asDate(meta.data_inicio);
+    const fim = asDate(meta.data_fim);
+    fim.setHours(23, 59, 59, 999);
+    return (registro) => {
+      const quando = new Date(registro.criado_em);
+      return quando >= inicio && quando <= fim;
+    };
+  }
+
   const inicio = periodStart(meta.periodo);
-  const desde = (registros) => registros.filter((r) => new Date(r.criado_em) >= inicio);
+  return (registro) => new Date(registro.criado_em) >= inicio;
+}
+
+export function goalProgress(meta, { vendas, clientes }) {
+  const dentroDaJanela = metaWindow(meta);
+  const desde = (registros) => registros.filter(dentroDaJanela);
 
   if (meta.tipo === "Faturamento R$") return sumRevenue(desde(vendas));
   if (meta.tipo === "Número de vendas") return desde(vendas).length;
