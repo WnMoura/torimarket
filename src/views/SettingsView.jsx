@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Field } from "../components/ui";
 
 const TAXAS = [
@@ -10,6 +10,7 @@ const TAXAS = [
 
 export function SettingsView({ settings, salvarConfiguracoes }) {
   const [form, setForm] = useState(settings);
+  const inputLogo = useRef(null);
 
   // O realtime pode trazer configurações novas enquanto a tela está aberta.
   useEffect(() => setForm(settings), [settings]);
@@ -18,12 +19,25 @@ export function SettingsView({ settings, salvarConfiguracoes }) {
 
   async function enviar(evento) {
     evento.preventDefault();
-    await salvarConfiguracoes(form);
+    const arquivoLogo = inputLogo.current?.files?.[0] || null;
+    const salvou = await salvarConfiguracoes(form, arquivoLogo);
+    if (salvou && inputLogo.current) inputLogo.current.value = "";
   }
 
   return (
     <form className="card grid" onSubmit={enviar}>
       <h2>Configurações</h2>
+
+      <Field label="Logo do negócio" full>
+        <div className="list-row">
+          {form.logo_url ? (
+            <img className="thumb" src={form.logo_url} alt="Logo do negócio" />
+          ) : (
+            <span className="muted">Nenhuma logo enviada</span>
+          )}
+          <input ref={inputLogo} className="grow" name="logo" type="file" accept="image/*" />
+        </div>
+      </Field>
 
       <div className="form-grid">
         <Field label="Nome do negócio">

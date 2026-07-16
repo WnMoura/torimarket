@@ -7,6 +7,7 @@ export const CONFIG_PADRAO = {
   id: 1,
   nome_negocio: "Meu negócio",
   nome_usuario: "Usuário",
+  logo_url: "",
   taxa_credito: 4.5,
   taxa_debito: 2,
   taxa_pix: 0,
@@ -35,6 +36,7 @@ const CAMPOS_PRODUTO = [
   "preco_sugerido",
   "preco_final",
   "estoque",
+  "cor",
   "tamanhos",
   "descricao",
 ];
@@ -217,12 +219,15 @@ export function useStore() {
         if (erro) throw erro;
       }),
 
-    salvarConfiguracoes: (form) =>
+    salvarConfiguracoes: (form, arquivoLogo) =>
       executar(async () => {
+        // Reaproveita o mesmo upload das fotos de produto; sem arquivo novo, mantém a logo atual.
+        const logo_url = await subirFoto(arquivoLogo, form.logo_url);
         const { error: erro } = await supabase.from("configuracoes").upsert({
           id: 1,
           nome_negocio: form.nome_negocio,
           nome_usuario: form.nome_usuario,
+          logo_url,
           taxa_credito: num(form.taxa_credito),
           taxa_debito: num(form.taxa_debito),
           taxa_pix: num(form.taxa_pix),

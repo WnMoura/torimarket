@@ -77,6 +77,8 @@ export function Stock({ products, sales, items, clients, onNovaVenda, excluirVen
                 <tr>
                   <th>Produto</th>
                   <th>Categoria</th>
+                  <th>Cor</th>
+                  <th>Tamanhos</th>
                   <th>Preço</th>
                   <th>Estoque</th>
                   <th>Status</th>
@@ -87,6 +89,8 @@ export function Stock({ products, sales, items, clients, onNovaVenda, excluirVen
                   <tr key={produto.id}>
                     <td>{produto.nome}</td>
                     <td>{produto.categoria}</td>
+                    <td>{produto.cor || "-"}</td>
+                    <td>{produto.tamanhos || "-"}</td>
                     <td>{fmtMoney(produto.preco_final)}</td>
                     <td>{produto.estoque}</td>
                     <td>

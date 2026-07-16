@@ -15,6 +15,7 @@ const PRODUTO_VAZIO = {
   preco_sugerido: 0,
   preco_final: 0,
   estoque: 0,
+  cor: "",
   tamanhos: "P,M,G,GG",
   descricao: "",
 };
@@ -148,6 +149,14 @@ export function Pricing({
             <input type="number" min="0" value={form.estoque} onChange={alterar("estoque")} />
           </Field>
 
+          <Field label="Cor / Cores">
+            <input
+              value={form.cor || ""}
+              placeholder="Ex: Preto, Rosa"
+              onChange={alterar("cor")}
+            />
+          </Field>
+
           <Field label="Tamanhos / Variações">
             <input value={form.tamanhos || ""} onChange={alterar("tamanhos")} />
           </Field>
@@ -196,6 +205,9 @@ export function Pricing({
                       {produto.categoria || "Sem categoria"} - {fmtMoney(produto.preco_final)} -
                       estoque {produto.estoque}
                     </p>
+                    {(produto.cor || produto.tamanhos) && (
+                      <p className="muted">{[produto.cor, produto.tamanhos].filter(Boolean).join(" · ")}</p>
+                    )}
                   </div>
                   <div className="icon-actions">
                     <IconButton
@@ -239,6 +251,9 @@ export function Pricing({
                       {produto.categoria || "Sem categoria"} - {fmtMoney(produto.preco_final)} -
                       estoque {produto.estoque}
                     </p>
+                    {(produto.cor || produto.tamanhos) && (
+                      <p className="muted">{[produto.cor, produto.tamanhos].filter(Boolean).join(" · ")}</p>
+                    )}
                   </div>
                   <div className="icon-actions">
                     <IconButton

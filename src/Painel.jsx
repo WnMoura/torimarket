@@ -107,7 +107,16 @@ export function Painel({ email }) {
             <p className="eyebrow">Empresa Gestor Pro</p>
             <h1>{titulo}</h1>
           </div>
-          <div className="business-name">{store.settings.nome_negocio}</div>
+          <div className="business-name" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {store.settings.logo_url && (
+              <img
+                src={store.settings.logo_url}
+                alt=""
+                style={{ width: 28, height: 28, borderRadius: 6, objectFit: "cover" }}
+              />
+            )}
+            {store.settings.nome_negocio}
+          </div>
         </header>
 
         {store.error && <div className="alert">{store.error}</div>}
