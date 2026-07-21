@@ -1,0 +1,587 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-21T00:00:00.000Z",
+  "title": "Design System: Tori Market — Empresa Gestor Pro",
+  "extensions": {
+    "colorMeta": {
+      "ink-black": {
+        "role": "neutral",
+        "displayName": "Ink Black",
+        "canonical": "oklch(15.2% 0.006 265)",
+        "tonalRamp": [
+          "#08090b",
+          "#121419",
+          "#181b22",
+          "#20242d",
+          "#2b303b",
+          "#5a6273",
+          "#a7adb8",
+          "#f7f7f8"
+        ]
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "Panel",
+        "canonical": "oklch(19.6% 0.008 265)",
+        "tonalRamp": [
+          "#0a0b0e",
+          "#121419",
+          "#181b22",
+          "#20242d",
+          "#2b303b",
+          "#4a5162",
+          "#8e95a3",
+          "#d8dbe1"
+        ]
+      },
+      "panel-raised": {
+        "role": "neutral",
+        "displayName": "Panel Raised",
+        "canonical": "oklch(22.5% 0.009 265)",
+        "tonalRamp": [
+          "#0d0f13",
+          "#14171d",
+          "#181b22",
+          "#20242d",
+          "#2b303b",
+          "#4a5162",
+          "#8e95a3",
+          "#d8dbe1"
+        ]
+      },
+      "panel-control": {
+        "role": "neutral",
+        "displayName": "Panel Control",
+        "canonical": "oklch(26.8% 0.011 265)",
+        "tonalRamp": [
+          "#0f1116",
+          "#171a21",
+          "#20242d",
+          "#2b303b",
+          "#3a4152",
+          "#5a6273",
+          "#a7adb8",
+          "#e6e8ec"
+        ]
+      },
+      "field-well": {
+        "role": "neutral",
+        "displayName": "Field Well",
+        "canonical": "oklch(17.4% 0.008 265)",
+        "tonalRamp": [
+          "#08090b",
+          "#0c0e12",
+          "#101217",
+          "#181b22",
+          "#20242d",
+          "#2b303b",
+          "#5a6273",
+          "#a7adb8"
+        ]
+      },
+      "rail": {
+        "role": "neutral",
+        "displayName": "Rail",
+        "canonical": "oklch(17.9% 0.007 265)",
+        "tonalRamp": [
+          "#08090b",
+          "#0d0f13",
+          "#121419",
+          "#181b22",
+          "#20242d",
+          "#2b303b",
+          "#5a6273",
+          "#a7adb8"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "canonical": "oklch(33.4% 0.016 265)",
+        "tonalRamp": [
+          "#121419",
+          "#1c202a",
+          "#2b303b",
+          "#3a4152",
+          "#4a5162",
+          "#6b7385",
+          "#a7adb8",
+          "#d8dbe1"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Text",
+        "canonical": "oklch(97.4% 0.001 265)",
+        "tonalRamp": [
+          "#2b303b",
+          "#4a5162",
+          "#6b7385",
+          "#8e95a3",
+          "#a7adb8",
+          "#d8dbe1",
+          "#eceef1",
+          "#f7f7f8"
+        ]
+      },
+      "soft": {
+        "role": "neutral",
+        "displayName": "Soft",
+        "canonical": "oklch(88.4% 0.006 265)",
+        "tonalRamp": [
+          "#2b303b",
+          "#4a5162",
+          "#6b7385",
+          "#8e95a3",
+          "#a7adb8",
+          "#c3c8d0",
+          "#d8dbe1",
+          "#f7f7f8"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "canonical": "oklch(73.1% 0.014 265)",
+        "tonalRamp": [
+          "#20242d",
+          "#2b303b",
+          "#4a5162",
+          "#6b7385",
+          "#8e95a3",
+          "#a7adb8",
+          "#c3c8d0",
+          "#e6e8ec"
+        ]
+      },
+      "accent-white": {
+        "role": "primary",
+        "displayName": "Counter White",
+        "canonical": "oklch(100% 0 0)",
+        "tonalRamp": [
+          "#2b303b",
+          "#4a5162",
+          "#6b7385",
+          "#8e95a3",
+          "#a7adb8",
+          "#d8dbe1",
+          "#f7f7f8",
+          "#ffffff"
+        ]
+      },
+      "positive": {
+        "role": "secondary",
+        "displayName": "Ledger Green",
+        "canonical": "oklch(78.1% 0.176 152)",
+        "tonalRamp": [
+          "#0a2416",
+          "#0f3d24",
+          "#155634",
+          "#1b7a48",
+          "#22a05e",
+          "#2bc271",
+          "#37d67a",
+          "#8ce8b4"
+        ]
+      },
+      "attention": {
+        "role": "secondary",
+        "displayName": "Signal Amber",
+        "canonical": "oklch(84.3% 0.145 88)",
+        "tonalRamp": [
+          "#2a2109",
+          "#43350d",
+          "#5d4a12",
+          "#7f661a",
+          "#a68522",
+          "#cba52f",
+          "#f5c84b",
+          "#fae0a0"
+        ]
+      },
+      "info": {
+        "role": "secondary",
+        "displayName": "Signal Blue",
+        "canonical": "oklch(71.4% 0.128 261)",
+        "tonalRamp": [
+          "#0a1729",
+          "#0f2543",
+          "#153560",
+          "#1c4a86",
+          "#2a63ad",
+          "#3f81d6",
+          "#68a6ff",
+          "#b3ceff"
+        ]
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Counter Red",
+        "canonical": "oklch(67.2% 0.196 5)",
+        "tonalRamp": [
+          "#2b0710",
+          "#3a111d",
+          "#54182a",
+          "#78233c",
+          "#a02f51",
+          "#cc3e69",
+          "#ff5578",
+          "#ffb0c1"
+        ]
+      },
+      "danger-well": {
+        "role": "tertiary",
+        "displayName": "Red Well",
+        "canonical": "oklch(24.1% 0.077 8)",
+        "tonalRamp": [
+          "#1b0d13",
+          "#2b0710",
+          "#3a111d",
+          "#54182a",
+          "#78233c",
+          "#a02f51",
+          "#cc3e69",
+          "#ff5578"
+        ]
+      },
+      "on-accent": {
+        "role": "neutral",
+        "displayName": "On Accent",
+        "canonical": "oklch(15.2% 0.006 265)",
+        "tonalRamp": [
+          "#08090b",
+          "#121419",
+          "#181b22",
+          "#20242d",
+          "#2b303b",
+          "#5a6273",
+          "#a7adb8",
+          "#f7f7f8"
+        ]
+      },
+      "danger-ink": {
+        "role": "tertiary",
+        "displayName": "Danger Ink",
+        "canonical": "oklch(89.4% 0.062 5)",
+        "tonalRamp": [
+          "#3a111d",
+          "#54182a",
+          "#78233c",
+          "#a02f51",
+          "#cc3e69",
+          "#ff5578",
+          "#ffb0c1",
+          "#ffd5dd"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Título da tela no topbar. Único tamanho fluido do sistema."
+      },
+      "metric": {
+        "displayName": "Metric",
+        "purpose": "Valor dentro do metric card — o elemento mais pesado da tela."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Título de card (h2)."
+      },
+      "subtitle": {
+        "displayName": "Subtitle",
+        "purpose": "Sub-bloco dentro de card (h3)."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Texto corrido e conteúdo de linha de lista."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Rótulo de métrica, cabeçalho de tabela e eyebrow — caixa alta, sempre em muted."
+      },
+      "metric-inline": {
+        "displayName": "Metric inline",
+        "purpose": "Valor de fechamento em linha: total da venda, saldo do mês."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Sub-linha de métrica, descrição de linha de lista, rótulo de campo."
+      }
+    },
+    "shadows": [
+      {
+        "name": "floating",
+        "value": "0 18px 60px rgba(0, 0, 0, 0.34)",
+        "purpose": "Modal, gaveta lateral aberta e card de login. Card em repouso não usa sombra."
+      },
+      {
+        "name": "scrim-modal",
+        "value": "rgba(0, 0, 0, 0.72)",
+        "purpose": "Overlay atrás do modal."
+      },
+      {
+        "name": "scrim-drawer",
+        "value": "rgba(0, 0, 0, 0.6)",
+        "purpose": "Overlay atrás da gaveta de navegação no mobile."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state",
+        "value": "0.18s ease",
+        "purpose": "Transição padrão de item de navegação e controle."
+      },
+      {
+        "name": "drawer",
+        "value": "transform 0.22s ease",
+        "purpose": "Abertura e fechamento da gaveta lateral no mobile."
+      },
+      {
+        "name": "control",
+        "value": "0.15s ease",
+        "purpose": "Hover e active de botão, icon button e segmented."
+      },
+      {
+        "name": "reduced",
+        "value": "prefers-reduced-motion: reduce → 0.01ms",
+        "purpose": "Alternativa obrigatória: a gaveta aparece em vez de deslizar."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide",
+        "value": "1120px"
+      },
+      {
+        "name": "mobile",
+        "value": "760px"
+      },
+      {
+        "name": "small",
+        "value": "480px"
+      }
+    ],
+    "zIndex": [
+      {
+        "name": "drawer-scrim",
+        "value": 19
+      },
+      {
+        "name": "drawer",
+        "value": 20
+      },
+      {
+        "name": "dialog",
+        "value": "top layer (nativo)"
+      }
+    ],
+    "touchTargets": [
+      {
+        "name": "pointer-fine",
+        "value": "38–43px"
+      },
+      {
+        "name": "pointer-coarse",
+        "value": "44px"
+      }
+    ],
+    "focus": {
+      "value": "outline: 2px solid #ffffff; outline-offset: 2px",
+      "purpose": "Anel único, aplicado por :focus-visible a todo controle."
+    }
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ação que fecha a tarefa: Salvar, Registrar venda. Uma por tela.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Registrar venda</button>",
+      "css": ".ds-btn { min-height: 42px; border: 1px solid var(--line, #2b303b); border-radius: 8px; background: var(--panel-3, #20242d); color: var(--text, #f7f7f8); padding: 9px 13px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; cursor: pointer; transition: 0.18s ease; } .ds-btn-primary { background: #ffffff; color: #08090b; border-color: #ffffff; font-weight: 800; } .ds-btn-primary:hover { background: #e6e8ec; border-color: #e6e8ec; } .ds-btn-primary:active { background: #a7adb8; border-color: #a7adb8; } .ds-btn-primary:disabled { opacity: 0.55; cursor: not-allowed; } .ds-btn-primary:focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "O padrão para todas as demais ações.",
+      "html": "<button class=\"ds-btn ds-btn-secondary\">Cancelar</button>",
+      "css": ".ds-btn-secondary { min-height: 42px; border: 1px solid #2b303b; border-radius: 8px; background: #20242d; color: #f7f7f8; padding: 9px 13px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; cursor: pointer; transition: 0.18s ease; } .ds-btn-secondary:hover { background: #2b303b; } .ds-btn-secondary:focus-visible { outline: 2px solid #f7f7f8; outline-offset: 2px; }"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Exclusão e estorno. Sempre contorno, nunca preenchido sólido.",
+      "html": "<button class=\"ds-btn-danger\">Excluir venda</button>",
+      "css": ".ds-btn-danger { min-height: 42px; border: 1px solid rgba(255, 85, 120, 0.42); border-radius: 8px; background: rgba(255, 85, 120, 0.09); color: #ff5578; padding: 9px 13px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; cursor: pointer; transition: 0.18s ease; } .ds-btn-danger:hover { background: rgba(255, 85, 120, 0.16); } .ds-btn-danger:focus-visible { outline: 2px solid #ff5578; outline-offset: 2px; }"
+    },
+    {
+      "name": "Icon Button",
+      "kind": "button",
+      "refersTo": "icon-button",
+      "description": "Ação por ícone em linha de lista e tabela. Sempre com aria-label.",
+      "html": "<button class=\"ds-icon-btn\" aria-label=\"Editar\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 20h9\"/><path d=\"M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z\"/></svg></button>",
+      "css": ".ds-icon-btn { width: 38px; height: 38px; display: inline-grid; place-items: center; border: 1px solid #2b303b; border-radius: 8px; background: #20242d; color: #f7f7f8; cursor: pointer; transition: 0.18s ease; } .ds-icon-btn svg { width: 17px; height: 17px; } .ds-icon-btn:hover { background: #2b303b; } .ds-icon-btn:focus-visible { outline: 2px solid #f7f7f8; outline-offset: 2px; }"
+    },
+    {
+      "name": "Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo de formulário: label acima, poço escuro, borda que ganha contraste no foco.",
+      "html": "<div class=\"ds-field\"><label for=\"ds-preco\">Preço de venda</label><input id=\"ds-preco\" type=\"text\" placeholder=\"R$ 0,00\" /></div>",
+      "css": ".ds-field { display: grid; gap: 7px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; } .ds-field label { color: #d8dbe1; font-size: 0.9rem; } .ds-field input { width: 100%; min-height: 43px; color: #f7f7f8; background: #0c0e12; border: 1px solid #2b303b; border-radius: 8px; padding: 10px 12px; outline: none; font: inherit; } .ds-field input::placeholder { color: #a7adb8; } .ds-field input:focus { border-color: #f7f7f8; }"
+    },
+    {
+      "name": "Metric Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "O bloco de número do dashboard: rótulo em caixa alta, valor pesado, sub-linha de contexto.",
+      "html": "<div class=\"ds-metric-card\"><div class=\"ds-metric-label\">Faturamento do mês</div><div class=\"ds-metric-value\">R$ 18.420,00</div><div class=\"ds-metric-sub\">32 vendas · margem 41%</div></div>",
+      "css": ".ds-metric-card { background: #121419; border: 1px solid #2b303b; border-radius: 8px; padding: 18px; min-height: 126px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #f7f7f8; } .ds-metric-label { color: #a7adb8; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 14px; } .ds-metric-value { font-size: 2rem; font-weight: 800; line-height: 1.1; letter-spacing: -0.015em; } .ds-metric-sub { color: #a7adb8; margin-top: 8px; font-size: 0.88rem; }"
+    },
+    {
+      "name": "List Row",
+      "kind": "card",
+      "refersTo": "list-row",
+      "description": "Linha de lista dentro de card — a alternativa a aninhar card dentro de card.",
+      "html": "<div class=\"ds-list-row\"><div><strong>Camiseta oversized preta</strong><p>3 unidades · custo R$ 28,00</p></div><span class=\"ds-positive\">R$ 89,90</span></div>",
+      "css": ".ds-list-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px; border: 1px solid #2b303b; background: #181b22; border-radius: 8px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #f7f7f8; } .ds-list-row strong { display: block; overflow-wrap: anywhere; } .ds-list-row p { margin: 3px 0 0; color: #a7adb8; font-size: 0.88rem; } .ds-positive { color: #37d67a; font-weight: 800; }"
+    },
+    {
+      "name": "Nav Item",
+      "kind": "nav",
+      "refersTo": "nav-item",
+      "description": "Item da barra lateral. Inativo recua em muted; ativo sobe para panel-raised.",
+      "html": "<nav class=\"ds-nav\"><button class=\"ds-nav-item active\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"9\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"5\"/><rect x=\"14\" y=\"12\" width=\"7\" height=\"9\"/><rect x=\"3\" y=\"16\" width=\"7\" height=\"5\"/></svg>Dashboard</button><button class=\"ds-nav-item\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 7 12 3 4 7v10l8 4 8-4Z\"/><path d=\"m4 7 8 4 8-4\"/><path d=\"M12 21V11\"/></svg>Estoque</button></nav>",
+      "css": ".ds-nav { background: #0d0f13; padding: 12px; border-radius: 8px; width: 244px; } .ds-nav-item { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin: 4px 0; color: #a7adb8; background: transparent; border: 1px solid transparent; border-radius: 8px; text-align: left; font-family: Inter, ui-sans-serif, system-ui, sans-serif; cursor: pointer; transition: 0.18s ease; } .ds-nav-item svg { width: 19px; height: 19px; } .ds-nav-item:hover, .ds-nav-item.active { color: #f7f7f8; background: #181b22; border-color: #2b303b; } .ds-nav-item:focus-visible { outline: 2px solid #f7f7f8; outline-offset: -2px; }"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "chip",
+      "refersTo": "segmented-active",
+      "description": "Seletor de período. O ativo é branco puro sobre preto — o acento do sistema.",
+      "html": "<div class=\"ds-segmented\"><button class=\"active\">Hoje</button><button>Semana</button><button>Mês</button></div>",
+      "css": ".ds-segmented { display: inline-flex; padding: 4px; border: 1px solid #2b303b; border-radius: 8px; background: #0d0f13; font-family: Inter, ui-sans-serif, system-ui, sans-serif; } .ds-segmented button { border: 0; border-radius: 6px; padding: 8px 12px; background: transparent; color: #a7adb8; cursor: pointer; transition: 0.18s ease; } .ds-segmented button:hover { color: #f7f7f8; } .ds-segmented button.active { background: #ffffff; color: #090a0d; font-weight: 600; }"
+    },
+    {
+      "name": "Status Pill",
+      "kind": "chip",
+      "refersTo": "status-pill",
+      "description": "Estado curto em tabela e cabeçalho. Neutro por padrão.",
+      "html": "<span class=\"ds-pill\">Em estoque</span> <span class=\"ds-pill warn\">Estoque baixo</span> <span class=\"ds-pill danger\">Sem estoque</span>",
+      "css": ".ds-pill { display: inline-flex; align-items: center; border-radius: 999px; border: 1px solid #2b303b; padding: 4px 8px; color: #a7adb8; font-size: 0.78rem; font-family: Inter, ui-sans-serif, system-ui, sans-serif; } .ds-pill.danger { color: #ff5578; border-color: rgba(255, 85, 120, 0.42); } .ds-pill.warn { color: #f5c84b; border-color: rgba(245,200,75,0.4); background: rgba(245,200,75,0.1); } .ds-pill.danger { background: rgba(255,85,120,0.1); }"
+    },
+    {
+      "name": "Alert",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "Aviso de migração pendente ou erro de operação, no topo da tela.",
+      "html": "<div class=\"ds-alert\" role=\"alert\">Migração 003 pendente: a exclusão de venda fica indisponível até aplicá-la.</div>",
+      "css": ".ds-alert { padding: 13px 14px; border: 1px solid rgba(255, 85, 120, 0.45); background: rgba(255, 85, 120, 0.1); color: #ffd5dd; border-radius: 8px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }"
+    },
+    {
+      "name": "Total Line",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "Valor de fechamento: total da venda no modal, saldo do mês no caixa.",
+      "html": "<p class=\"ds-total-line\"><span>Total</span><strong>R$ 289,90</strong></p>",
+      "css": ".ds-total-line { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 4px 0 16px; padding-top: 14px; border-top: 1px solid #2b303b; font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #f7f7f8; } .ds-total-line span { color: #a7adb8; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; } .ds-total-line strong { font-size: 1.5rem; font-weight: 800; line-height: 1.1; letter-spacing: -0.015em; }"
+    },
+    {
+      "name": "Confirm Dialog",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "Pergunta destrutiva: consequência em prosa, Cancelar focado, destrutivo em contorno.",
+      "html": "<div class=\"ds-confirm\"><h2>Excluir a venda de R$ 259,80?</h2><p>Os produtos dela voltam para o estoque e ela some do DRE e dos relatórios. Não dá para desfazer.</p><div class=\"ds-confirm-actions\"><button class=\"ds-btn-secondary\">Cancelar</button><button class=\"ds-btn-danger\">Excluir venda</button></div></div>",
+      "css": ".ds-confirm { width: min(460px, 100%); background: #121419; border: 1px solid #2b303b; border-radius: 8px; padding: 20px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #f7f7f8; box-shadow: 0 18px 60px rgba(0,0,0,0.34); } .ds-confirm h2 { font-size: 1.1rem; margin: 0 0 18px; } .ds-confirm p { margin: 0 0 20px; color: #d8dbe1; max-width: 62ch; line-height: 1.55; } .ds-confirm-actions { display: flex; justify-content: flex-end; gap: 10px; } .ds-confirm-actions button { min-height: 42px; border-radius: 8px; padding: 9px 13px; font: inherit; cursor: pointer; } .ds-btn-secondary { background: #20242d; color: #f7f7f8; border: 1px solid #2b303b; } .ds-btn-danger { background: rgba(255,85,120,0.09); color: #ff5578; border: 1px solid rgba(255,85,120,0.42); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Night Counter",
+    "overview": "O balcão à noite: a sala está escura, a luz cai só onde o trabalho acontece. O fundo é quase-preto (#08090b), os painéis são grafite, e o branco puro é a luz — ele marca a ação primária, a aba ativa, a barra do gráfico. Quando uma cor aparece, ela está dizendo alguma coisa: verde é resultado positivo, rosa é perigo, amarelo é atenção, azul é informação. Cor sem significado não entra.\n\nA marca é preto e branco, e o sistema leva isso a sério: a identidade não vem de um roxo de startup, vem do contraste. A densidade é alta por escolha: doze telas de uso diário, um operador só, nenhuma delas pode exigir rolagem para achar o número. O ritmo de espaço (14–24px) e a régua de 1px em #2b303b fazem a leitura; não a cor de fundo.\n\nEste sistema rejeita duas coisas por nome. ERP de contador: cinza sobre cinza, fileira de abas, fonte de 11px, densidade que veio de desleixo. E landing de startup SaaS: gradiente decorativo, número gigante com rótulo minúsculo, card dentro de card, seção que existe para impressionar. Este é um app de trabalho.",
+    "keyCharacteristics": [
+      "Escuro por padrão, sem tema claro",
+      "Uma família tipográfica (Inter variável, self-hosted) em cinco pesos, escala fixa em rem",
+      "Acento monocromático: branco puro carrega toda ação primária",
+      "Quatro cores semânticas, nenhuma decorativa",
+      "Profundidade por camada tonal e régua de 1px, não por sombra",
+      "Um único raio (8px) em tudo que não é pílula"
+    ],
+    "rules": [
+      {
+        "name": "The Meaning-Only Rule",
+        "body": "Verde, âmbar, azul e rosa só entram quando carregam significado de estado. Um número neutro é branco ou soft, nunca colorido \"para ficar bonito\".",
+        "section": "colors"
+      },
+      {
+        "name": "The Two-Tone Brand Rule",
+        "body": "A identidade é preto e branco. Nenhuma cor de marca adicional entra no sistema; se algum dia entrar, ela substitui o branco no papel de acento — não se soma a ele.",
+        "section": "colors"
+      },
+      {
+        "name": "The Muted Floor Rule",
+        "body": "#a7adb8 é o cinza mais escuro permitido para texto sobre panel. Nada abaixo disso.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Family Rule",
+        "body": "Inter carrega tudo. Nenhuma fonte display, nenhuma mono decorativa, nenhum segundo sans \"para dar contraste\".",
+        "section": "typography"
+      },
+      {
+        "name": "The Fixed Scale Rule",
+        "body": "Fora do título de tela e do valor de métrica, todo tamanho é fixo em rem. Responsividade aqui é estrutural.",
+        "section": "typography"
+      },
+      {
+        "name": "The Caps-Are-Labels Rule",
+        "body": "Caixa alta com tracking existe só para rótulo de dado. Nunca em título de seção, nunca em frase, nunca em botão.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-Card Rule",
+        "body": "Card em repouso não tem sombra. O que separa o card do fundo é o degrau de cor mais a borda de 1px. A sombra Floating pertence a modal, gaveta e card de login.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Well-vs-Riser Rule",
+        "body": "Se o usuário digita ali, o fundo desce (field-well). Se ele clica ali, o fundo sobe (panel-control).",
+        "section": "elevation"
+      },
+      {
+        "name": "The Tabular Rule",
+        "body": "font-variant-numeric: tabular-nums no body: em coluna de preço e em valor que atualiza, o dígito não pode mudar de largura.",
+        "section": "typography"
+      }
+    ],
+    "dos": [
+      "Do manter o acento em branco puro (#ffffff) para ação primária, aba ativa e barra do gráfico — uma ação primária por tela.",
+      "Do usar cor semântica só com significado de estado: #37d67a positivo, #f5c84b atenção, #68a6ff informação, #ff5578 perigo.",
+      "Do construir profundidade pela rampa tonal (#08090b → #121419 → #181b22 → #20242d) mais a régua de 1px em #2b303b.",
+      "Do usar 8px de raio em tudo, e 999px só em pílula e progress.",
+      "Do manter Inter como família única, em escala fixa em rem fora do título de tela e do valor de métrica.",
+      "Do dar a toda tela um estado vazio que explique o que falta.",
+      "Do deixar tabela rolar dentro de .table-wrap; o corpo da página nunca rola na horizontal.",
+      "Do respeitar env(safe-area-inset-*) em shell, modal e gaveta.",
+      "Do crescer o alvo para 44px em @media (pointer: coarse); no ponteiro fino, 38–43px basta.",
+      "Do dar a todo controle o anel de foco do sistema (outline 2px branco, offset 2px) e travar o botão enquanto o envio corre.",
+      "Do dimensionar ícone por regra (.btn svg 16px, .icon-button svg 17px), nunca por size={} em cada chamada."
+    ],
+    "donts": [
+      "Don't parecer ERP antigo / sistema de contador: cinza sobre cinza, fileira de abas, fonte abaixo de 0.75rem, densidade sem ritmo de espaço.",
+      "Don't parecer landing de startup SaaS: gradiente decorativo, número gigante com rótulo minúsculo como enfeite, card dentro de card, seção que existe para impressionar.",
+      "Don't usar background-clip: text com gradiente.",
+      "Don't aninhar card dentro de card. Use linha de lista (panel-raised) dentro do card.",
+      "Don't usar border-left colorida maior que 1px como faixa de destaque.",
+      "Don't introduzir uma segunda família tipográfica, nem caixa alta fora de rótulo de dado.",
+      "Don't colocar texto abaixo de #a7adb8 sobre #121419.",
+      "Don't aplicar sombra em card em repouso; ela pertence a modal, gaveta e login.",
+      "Don't abrir modal para o que cabe inline.",
+      "Don't animar entrada de seção ou orquestrar carregamento; movimento é 150–250ms, só comunica estado, e sempre com alternativa em prefers-reduced-motion.",
+      "Don't preencher botão de exclusão com rosa sólido; destrutivo é contorno, não convite.",
+      "Don't deixar cor literal no CSS: tudo passa por token, inclusive os scrims e o texto do alerta.",
+      "Don't usar confirm(), alert() ou prompt() do navegador. A pergunta mora na modal."
+    ]
+  }
+}
