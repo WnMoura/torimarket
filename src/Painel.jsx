@@ -235,6 +235,8 @@ export function Painel({ email }) {
                 settings={store.settings}
                 excluirVenda={store.excluirVenda}
                 onEditarVenda={editarVenda}
+                onNovaVenda={() => setModal("sale")}
+                onIrParaProdutos={() => setAba("precificacao")}
               />
             )}
 

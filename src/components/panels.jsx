@@ -180,20 +180,39 @@ export function BestSellers({ items }) {
 }
 
 export function BarChart({ bars }) {
-  const maior = Math.max(1, ...bars.map((b) => b.total));
+  const valores = bars.map((b) => b.total);
+  const maior = Math.max(...valores, 0);
+  const temMovimento = maior > 0;
 
   return (
-    <div className="chart" style={{ "--bars": bars.length || 1 }}>
-      {bars.map((barra) => (
-        <div className="bar-wrap" key={barra.label}>
-          <div
-            className="bar"
-            data-tip={`${barra.label} - ${fmtMoney(barra.total)}`}
-            style={{ height: `${Math.max(5, (barra.total / maior) * 100)}%` }}
-          />
-          <span className="bar-label">{barra.label}</span>
-        </div>
-      ))}
-    </div>
+    <>
+      {/*
+       * A borda superior do gráfico é a altura do maior valor; sem rotulá-la, uma barra
+       * alta não dizia se eram cinquenta reais ou cinco mil. No toque não há hover para
+       * consultar, então esta é a única referência de escala que existe no celular.
+       */}
+      <p className="chart-scale">
+        {temMovimento ? `máximo ${fmtMoney(maior)}` : "sem movimento no período"}
+      </p>
+
+      <div className="chart" style={{ "--bars": bars.length || 1 }}>
+        {bars.map((barra) => {
+          const vazia = barra.total <= 0;
+
+          return (
+            <div className="bar-wrap" key={barra.label}>
+              <div
+                className={`bar ${vazia ? "vazia" : ""}`}
+                data-tip={`${barra.label} - ${fmtMoney(barra.total)}`}
+                // Dia sem venda é um traço na linha de base, não uma cápsula de 8px
+                // flutuando — aquilo lia como defeito de renderização, não como zero.
+                style={vazia ? undefined : { height: `${(barra.total / maior) * 100}%` }}
+              />
+              <span className="bar-label">{barra.label}</span>
+            </div>
+          );
+        })}
+      </div>
+    </>
   );
 }

@@ -292,6 +292,50 @@ h3 { font-size: 0.98rem; margin-bottom: 10px; }
 
 .metrics {
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* Ritmo: as métricas são um grupo, então respiram menos entre si do que entre seções. */
+  gap: 12px;
+}
+
+.metrics-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Primeiro uso: uma coluna estreita de texto, não um card de largura cheia com
+   uma frase perdida no meio. */
+.primeiro-uso {
+  display: grid;
+  justify-items: start;
+  gap: 14px;
+  padding: 28px;
+}
+
+.primeiro-uso p {
+  margin: 0;
+  max-width: 58ch;
+  color: var(--soft);
+  line-height: 1.55;
+}
+
+/* Dia sem venda: recado à esquerda, ação à direita, e quebra em duas linhas quando aperta. */
+.dia-vazio {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dia-vazio strong {
+  display: block;
+  font-size: 1.1rem;
+}
+
+.dia-vazio p {
+  margin: 4px 0 0;
+}
+
+.dia-vazio .btn {
+  flex: 0 0 auto;
 }
 
 .main-grid {
@@ -413,6 +457,16 @@ h3 { font-size: 0.98rem; margin-bottom: 10px; }
   gap: 8px;
 }
 
+/* Rótulo da escala, alinhado à direita logo acima da régua que ele descreve. */
+.chart-scale {
+  margin: 0;
+  text-align: right;
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .bar {
   width: 100%;
   max-width: 56px;
@@ -420,6 +474,14 @@ h3 { font-size: 0.98rem; margin-bottom: 10px; }
   border-radius: 7px 7px 3px 3px;
   background: linear-gradient(180deg, var(--accent), var(--bar-end));
   position: relative;
+}
+
+/* Zero é um traço na base, não uma barra curta: barra curta sugere "vendeu pouco". */
+.bar.vazia {
+  height: 2px;
+  min-height: 2px;
+  border-radius: 0;
+  background: var(--line);
 }
 
 /* Mês no vermelho: a barra troca de cor, e o selo de variação diz a direção. */
