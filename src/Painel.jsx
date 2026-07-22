@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   BarChart3,
   Boxes,
@@ -15,7 +15,9 @@ import {
 } from "lucide-react";
 import { useStore } from "./hooks/useStore";
 import { sair } from "./hooks/useAuth";
-import { IconButton } from "./components/ui";
+import { useMediaQuery } from "./hooks/useMediaQuery";
+import { useRota, useVoltarFechaModal } from "./hooks/useRota";
+import { DashboardSkeleton, IconButton } from "./components/ui";
 import { currentMonth } from "./lib/format";
 import { Cash } from "./views/Cash";
 import { Clients } from "./views/Clients";
@@ -32,23 +34,27 @@ import { EditSaleModal } from "./modals/EditSaleModal";
 import { GoalModal } from "./modals/GoalModal";
 import { SaleModal } from "./modals/SaleModal";
 
+// O primeiro item é o slug que aparece na URL — legível, em português, e estável:
+// é o que o dono vê ao favoritar uma tela.
 const ABAS = [
-  ["dashboard", "Início", Grid3X3],
+  ["inicio", "Início", Grid3X3],
   ["faturamento", "Faturamento", Wallet],
-  ["pricing", "Precificação", Tag],
-  ["stock", "Produtos & Estoque", Boxes],
-  ["clients", "Clientes", Users],
-  ["goals", "Metas", Target],
-  ["cash", "Fluxo de Caixa", FileText],
+  ["precificacao", "Precificação", Tag],
+  ["estoque", "Produtos & Estoque", Boxes],
+  ["clientes", "Clientes", Users],
+  ["metas", "Metas", Target],
+  ["caixa", "Fluxo de Caixa", FileText],
   ["dre", "DRE", BarChart3],
   ["insights", "Insights", Lightbulb],
-  ["settings", "Configurações", Settings],
+  ["configuracoes", "Configurações", Settings],
 ];
+
+const ABA_PADRAO = "inicio";
 
 export function Painel({ email }) {
   const store = useStore();
 
-  const [aba, setAba] = useState("dashboard");
+  const [aba, setAba] = useRota(ABA_PADRAO);
   const [menuAberto, setMenuAberto] = useState(false);
   const [modal, setModal] = useState(null);
   const [clienteEmEdicao, setClienteEmEdicao] = useState(null);
@@ -57,11 +63,47 @@ export function Painel({ email }) {
 
   const titulo = ABAS.find(([id]) => id === aba)?.[1] || "Início";
 
+  // A aba da vez também é o nome da janela — importa em quem trabalha com várias abertas.
+  useEffect(() => {
+    document.title = `${titulo} · Empresa Gestor Pro`;
+  }, [titulo]);
+
+  // Abaixo de 760px a barra lateral vira gaveta: fechada, ela sai da tela e precisa
+  // sair junto da ordem de tabulação — senão são 10 destinos invisíveis antes do conteúdo.
+  const ehMobile = useMediaQuery("(max-width: 760px)");
+  const gavetaOculta = ehMobile && !menuAberto;
+
+  const botaoMenu = useRef(null);
+  const botaoFechar = useRef(null);
+  const jaMontou = useRef(false);
+
+  // Abrir leva o foco para dentro da gaveta; fechar devolve para o hambúrguer.
+  // Na primeira renderização não mexe em nada: ninguém pediu foco ainda.
+  useEffect(() => {
+    if (!jaMontou.current) {
+      jaMontou.current = true;
+      return;
+    }
+    if (!ehMobile) return;
+    if (menuAberto) botaoFechar.current?.focus();
+    else botaoMenu.current?.focus();
+  }, [menuAberto, ehMobile]);
+
+  // A gaveta é uma camada sobreposta, e camada sobreposta fecha no Esc.
+  useEffect(() => {
+    if (!menuAberto) return undefined;
+    const aoTeclar = (evento) => evento.key === "Escape" && setMenuAberto(false);
+    window.addEventListener("keydown", aoTeclar);
+    return () => window.removeEventListener("keydown", aoTeclar);
+  }, [menuAberto]);
+
   function fecharModal() {
     setModal(null);
     setClienteEmEdicao(null);
     setVendaEmEdicao(null);
   }
+
+  useVoltarFechaModal(Boolean(modal), fecharModal);
 
   function editarVenda(venda) {
     setVendaEmEdicao(venda);
@@ -70,10 +112,15 @@ export function Painel({ email }) {
 
   return (
     <>
-      <aside className={`sidebar ${menuAberto ? "open" : ""}`}>
+      <aside
+        id="menu-lateral"
+        className={`sidebar ${menuAberto ? "open" : ""}`}
+        inert={gavetaOculta}
+      >
         <button
           className="sidebar-close"
           type="button"
+          ref={botaoFechar}
           aria-label="Fechar menu"
           onClick={() => setMenuAberto(false)}
         >
@@ -81,24 +128,36 @@ export function Painel({ email }) {
         </button>
 
         <div className="profile">
-          <div className="avatar">
-            {(store.settings.nome_usuario || "U").slice(0, 1).toUpperCase()}
-          </div>
+          {store.settings.foto_usuario ? (
+            <img
+              className="avatar"
+              src={store.settings.foto_usuario}
+              alt=""
+              width={44}
+              height={44}
+              decoding="async"
+            />
+          ) : (
+            <div className="avatar">
+              {(store.settings.nome_usuario || "U").slice(0, 1).toUpperCase()}
+            </div>
+          )}
           <div className="grow">
-            <strong>{store.settings.nome_usuario}</strong>
-            <span>{email}</span>
+            <strong title={store.settings.nome_usuario}>{store.settings.nome_usuario}</strong>
+            <span title={email}>{email}</span>
           </div>
           <IconButton title="Sair" onClick={sair}>
             <LogOut />
           </IconButton>
         </div>
 
-        <nav>
+        <nav aria-label="Telas do sistema">
           {ABAS.map(([id, rotulo, Icone]) => (
             <button
               key={id}
               type="button"
               className={`nav-item ${aba === id ? "active" : ""}`}
+              aria-current={aba === id ? "page" : undefined}
               onClick={() => {
                 setAba(id);
                 setMenuAberto(false);
@@ -119,36 +178,55 @@ export function Painel({ email }) {
           <button
             className="icon-button menu-button"
             type="button"
+            ref={botaoMenu}
+            aria-label="Abrir menu"
+            aria-expanded={menuAberto}
+            aria-controls="menu-lateral"
             onClick={() => setMenuAberto(true)}
           >
             <span />
             <span />
             <span />
           </button>
+          {/*
+            No desktop a barra lateral já diz em que tela você está — item aceso e
+            aria-current. Repetir o nome no topo é ruído. O h1 continua existindo para
+            leitor de tela e para o celular, onde a navegação some dentro da gaveta.
+          */}
           <div>
-            <p className="eyebrow">Empresa Gestor Pro</p>
-            <h1>{titulo}</h1>
+            <h1 className={ehMobile ? "" : "sr-only"}>{titulo}</h1>
           </div>
           <div className="business-name">
             {store.settings.logo_url && (
               <img
+                className="business-logo"
                 src={store.settings.logo_url}
                 alt=""
-                style={{ width: 28, height: 28, borderRadius: 6, objectFit: "cover" }}
+                width={28}
+                height={28}
+                decoding="async"
               />
             )}
             {store.settings.nome_negocio}
           </div>
         </header>
 
-        {store.error && <div className="alert">{store.error}</div>}
-        {store.aviso && <div className="alert">{store.aviso}</div>}
+        {store.error && (
+          <div className="alert" role="alert">
+            {store.error}
+          </div>
+        )}
+        {store.aviso && (
+          <div className="alert" role="status">
+            {store.aviso}
+          </div>
+        )}
 
         {store.loading ? (
-          <div className="card empty">Carregando dados do Supabase...</div>
+          <DashboardSkeleton />
         ) : (
           <>
-            {aba === "dashboard" && (
+            {aba === "inicio" && (
               <Dashboard
                 sales={store.sales}
                 items={store.items}
@@ -164,7 +242,7 @@ export function Painel({ email }) {
               <Faturamento sales={store.sales} items={store.items} settings={store.settings} />
             )}
 
-            {aba === "pricing" && (
+            {aba === "precificacao" && (
               <Pricing
                 products={store.products}
                 archivedProducts={store.archivedProducts}
@@ -176,7 +254,7 @@ export function Painel({ email }) {
               />
             )}
 
-            {aba === "stock" && (
+            {aba === "estoque" && (
               <Stock
                 products={store.products}
                 sales={store.sales}
@@ -188,7 +266,7 @@ export function Painel({ email }) {
               />
             )}
 
-            {aba === "clients" && (
+            {aba === "clientes" && (
               <Clients
                 clients={store.clients}
                 excluir={store.excluir}
@@ -203,7 +281,7 @@ export function Painel({ email }) {
               />
             )}
 
-            {aba === "goals" && (
+            {aba === "metas" && (
               <Goals
                 goals={store.goals}
                 sales={store.sales}
@@ -213,7 +291,7 @@ export function Painel({ email }) {
               />
             )}
 
-            {aba === "cash" && (
+            {aba === "caixa" && (
               <Cash
                 sales={store.sales}
                 cash={store.cash}
@@ -237,7 +315,7 @@ export function Painel({ email }) {
 
             {aba === "insights" && <Insights sales={store.sales} items={store.items} />}
 
-            {aba === "settings" && (
+            {aba === "configuracoes" && (
               <SettingsView
                 settings={store.settings}
                 salvarConfiguracoes={store.salvarConfiguracoes}
