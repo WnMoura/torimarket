@@ -3,9 +3,11 @@ import { Pencil, Trash2 } from "lucide-react";
 import { paymentSummary } from "../lib/calc";
 import { dateBR, fmtMoney, num } from "../lib/format";
 import { Empty, IconButton } from "./ui";
+import { useConfirmacao } from "./useConfirmacao";
 
 export function SalesTable({ title, sales, clients, excluirVenda, onEditarVenda }) {
   const temAcoes = Boolean(excluirVenda || onEditarVenda);
+  const [confirmar, dialogo] = useConfirmacao();
 
   const nomePorId = useMemo(
     () => Object.fromEntries(clients.map((c) => [c.id, c.nome])),
@@ -13,15 +15,18 @@ export function SalesTable({ title, sales, clients, excluirVenda, onEditarVenda 
   );
 
   async function remover(venda) {
-    const confirmado = confirm(
-      `Excluir esta venda de ${fmtMoney(venda.total)}?\n\n` +
-        `Os produtos dela voltam para o estoque e ela some do DRE e dos relatórios. Não dá para desfazer.`,
-    );
+    const confirmado = await confirmar({
+      titulo: `Excluir a venda de ${fmtMoney(venda.total)}?`,
+      mensagem:
+        "Os produtos dela voltam para o estoque e ela some do DRE e dos relatórios. Não dá para desfazer.",
+      rotulo: "Excluir venda",
+    });
     if (confirmado) await excluirVenda(venda.id);
   }
 
   return (
     <div className="card">
+      {dialogo}
       <h2>{title}</h2>
       {sales.length === 0 ? (
         <Empty>Nenhuma venda registrada.</Empty>
@@ -30,12 +35,16 @@ export function SalesTable({ title, sales, clients, excluirVenda, onEditarVenda 
           <table>
             <thead>
               <tr>
-                <th>Cliente</th>
-                <th>Produto</th>
-                <th>Valor</th>
-                <th>Pagamento</th>
-                <th>Data</th>
-                {temAcoes && <th />}
+                <th scope="col">Cliente</th>
+                <th scope="col">Produto</th>
+                <th scope="col">Valor</th>
+                <th scope="col">Pagamento</th>
+                <th scope="col">Data</th>
+                {temAcoes && (
+                  <th scope="col">
+                    <span className="sr-only">Ações</span>
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>

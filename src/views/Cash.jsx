@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { Field, IconButton } from "../components/ui";
+import { useConfirmacao } from "../components/useConfirmacao";
 import { salesIn, sumRevenue } from "../lib/calc";
 import { dateBR, fmtMoney, monthKey, num, today } from "../lib/format";
 
@@ -16,6 +17,8 @@ export function Cash({
   excluirVenda,
 }) {
   const [form, setForm] = useState(LANCAMENTO_VAZIO);
+  const [enviando, setEnviando] = useState(false);
+  const [confirmar, dialogo] = useConfirmacao();
 
   const { linhas, saldo } = useMemo(() => {
     const vendasDoMes = salesIn(sales, periodo);
@@ -59,29 +62,38 @@ export function Cash({
 
   async function remover(linha) {
     if (linha.origem === "venda") {
-      const confirmado = confirm(
-        `Excluir a ${linha.descricao} (${fmtMoney(linha.valor)})?\n\n` +
-          `Os produtos dela voltam para o estoque e ela some do DRE e dos relatórios. Não dá para desfazer.`,
-      );
+      const confirmado = await confirmar({
+        titulo: `Excluir a ${linha.descricao} (${fmtMoney(linha.valor)})?`,
+        mensagem:
+          "Os produtos dela voltam para o estoque e ela some do DRE e dos relatórios. Não dá para desfazer.",
+        rotulo: "Excluir venda",
+      });
       if (confirmado) await excluirVenda(linha.id);
       return;
     }
 
-    if (confirm(`Excluir o lançamento "${linha.descricao}"?`)) {
-      await excluir("lancamentos", linha.id);
-    }
+    const confirmado = await confirmar({
+      titulo: `Excluir o lançamento ${linha.descricao}?`,
+      mensagem: `Sai do saldo do mês e do fluxo de caixa. São ${fmtMoney(linha.valor)} em ${linha.tipo}.`,
+      rotulo: "Excluir lançamento",
+    });
+    if (confirmado) await excluir("lancamentos", linha.id);
   }
 
   const alterar = (campo) => (evento) => setForm({ ...form, [campo]: evento.target.value });
 
   async function enviar(evento) {
     evento.preventDefault();
+    setEnviando(true);
     const salvou = await salvarLancamento(form);
+    setEnviando(false);
+
     if (salvou) setForm({ ...LANCAMENTO_VAZIO, data: form.data });
   }
 
   return (
     <section className="grid two-col">
+      {dialogo}
       <div className="card">
         <div className="toolbar">
           <h2>Fluxo de Caixa</h2>
@@ -92,17 +104,22 @@ export function Cash({
           />
         </div>
 
-        <h2>Saldo do mês: {fmtMoney(saldo)}</h2>
+        <p className="total-line">
+          <span>Saldo do mês</span>
+          <strong className={saldo < 0 ? "danger-text" : ""}>{fmtMoney(saldo)}</strong>
+        </p>
 
         <div className="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Data</th>
-                <th>Descrição</th>
-                <th>Tipo</th>
-                <th>Valor</th>
-                <th />
+                <th scope="col">Data</th>
+                <th scope="col">Descrição</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Valor</th>
+                <th scope="col">
+                  <span className="sr-only">Ações</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -154,8 +171,8 @@ export function Cash({
           <input type="date" value={form.data} onChange={alterar("data")} />
         </Field>
 
-        <button className="btn primary" type="submit">
-          Adicionar
+        <button className="btn primary" type="submit" disabled={enviando}>
+          {enviando ? "Adicionando..." : "Adicionar"}
         </button>
       </form>
     </section>

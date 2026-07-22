@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { Empty, IconButton } from "../components/ui";
+import { useConfirmacao } from "../components/useConfirmacao";
 
 export function Clients({ clients, excluir, onNovo, onEditar }) {
   const [busca, setBusca] = useState("");
+  const [confirmar, dialogo] = useConfirmacao();
 
   const termo = busca.trim().toLowerCase();
   const visiveis = clients.filter((cliente) =>
@@ -11,12 +13,18 @@ export function Clients({ clients, excluir, onNovo, onEditar }) {
   );
 
   async function remover(cliente) {
-    if (!confirm(`Excluir "${cliente.nome}"? As vendas dele viram "cliente avulso".`)) return;
-    await excluir("clientes", cliente.id);
+    const confirmado = await confirmar({
+      titulo: `Excluir ${cliente.nome}?`,
+      mensagem:
+        "O cadastro sai da lista, mas as vendas dele ficam — passam a aparecer como “cliente avulso”.",
+      rotulo: "Excluir cliente",
+    });
+    if (confirmado) await excluir("clientes", cliente.id);
   }
 
   return (
     <div className="card">
+      {dialogo}
       <div className="toolbar">
         <h2>{visiveis.length} clientes</h2>
         <div className="filters">
@@ -26,7 +34,7 @@ export function Clients({ clients, excluir, onNovo, onEditar }) {
             onChange={(evento) => setBusca(evento.target.value)}
           />
           <button className="btn primary" type="button" onClick={onNovo}>
-            Novo
+            <Plus aria-hidden="true" /> Novo cliente
           </button>
         </div>
       </div>

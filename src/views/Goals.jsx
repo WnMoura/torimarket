@@ -17,7 +17,7 @@ export function Goals({ goals, sales, clients, excluir, onNova }) {
       <div className="toolbar">
         <h2>Metas</h2>
         <button className="btn primary" type="button" onClick={onNova}>
-          <Plus size={17} /> Nova meta
+          <Plus aria-hidden="true" /> Nova meta
         </button>
       </div>
 

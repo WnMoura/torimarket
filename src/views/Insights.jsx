@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { BarChart, BestSellers } from "../components/panels";
+import { Empty } from "../components/ui";
 import { FORMAS_PAGAMENTO, salePayments, sumRevenue } from "../lib/calc";
 import { fmtMoney, monthKey, monthLabel, num } from "../lib/format";
 
@@ -25,8 +26,14 @@ export function Insights({ sales, items }) {
 
       <div className="card">
         <h2>Faturamento por mês</h2>
-        <BarChart bars={porMes} />
-        <p className="muted">Ticket médio: {fmtMoney(ticketMedio)}</p>
+        {porMes.length === 0 ? (
+          <Empty>Nenhuma venda registrada ainda — o gráfico aparece a partir da primeira.</Empty>
+        ) : (
+          <>
+            <BarChart bars={porMes} />
+            <p className="muted">Ticket médio: {fmtMoney(ticketMedio)}</p>
+          </>
+        )}
       </div>
 
       <div className="card">

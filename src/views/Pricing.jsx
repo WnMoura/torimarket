@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { Archive, ArchiveRestore, Pencil, Trash2 } from "lucide-react";
 import { Empty, Field, IconButton } from "../components/ui";
+import { useConfirmacao } from "../components/useConfirmacao";
 import { installmentPrices, realMargin, suggestedPrice } from "../lib/calc";
 import { fmtMoney, num } from "../lib/format";
 
@@ -39,6 +40,8 @@ export function Pricing({
   const [form, setForm] = useState(PRODUTO_VAZIO);
   const [editandoId, setEditandoId] = useState(null);
   const [mostrarArquivados, setMostrarArquivados] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const [confirmar, dialogo] = useConfirmacao();
   const inputFoto = useRef(null);
 
   // Produto que já saiu em alguma venda não pode ser excluído sem levar o histórico junto.
@@ -59,6 +62,8 @@ export function Pricing({
     evento.preventDefault();
     const arquivo = inputFoto.current?.files?.[0] || null;
 
+    // A foto pode demorar a subir; sem o trava-envio o duplo clique cadastra duas vezes.
+    setEnviando(true);
     const salvou = await salvarProduto(
       {
         ...form,
@@ -69,16 +74,19 @@ export function Pricing({
       arquivo,
       editandoId,
     );
+    setEnviando(false);
 
     if (salvou) limpar();
   }
 
   async function remover(produto) {
     if (idsComVenda.has(produto.id)) {
-      const confirmado = confirm(
-        `"${produto.nome}" já foi vendido, então não pode ser excluído sem apagar o histórico de vendas junto.\n\n` +
-          `Arquivar? Ele sai das listas e da tela de venda, mas continua no DRE e nos relatórios. Dá para restaurar depois.`,
-      );
+      const confirmado = await confirmar({
+        titulo: `Arquivar ${produto.nome}?`,
+        mensagem:
+          "Este produto já foi vendido, então excluir levaria o histórico de vendas junto. Arquivado, ele sai das listas e da tela de venda, mas continua contando no DRE e nos relatórios. Dá para restaurar depois.",
+        rotulo: "Arquivar produto",
+      });
       if (!confirmado) return;
 
       const arquivou = await arquivarProduto(produto.id, true);
@@ -86,9 +94,11 @@ export function Pricing({
       return;
     }
 
-    const confirmado = confirm(
-      `Excluir "${produto.nome}" definitivamente? A foto sai junto e não dá para desfazer.`,
-    );
+    const confirmado = await confirmar({
+      titulo: `Excluir ${produto.nome}?`,
+      mensagem: "A foto sai junto e não dá para desfazer. Este produto nunca foi vendido, então nenhum histórico se perde.",
+      rotulo: "Excluir produto",
+    });
     if (!confirmado) return;
 
     const excluiu = await excluirProduto(produto);
@@ -97,6 +107,7 @@ export function Pricing({
 
   return (
     <section className="grid two-col">
+      {dialogo}
       <form className="card" onSubmit={enviar}>
         <div className="toolbar">
           <h2>{editandoId ? "Editar produto" : "Novo produto"}</h2>
@@ -191,8 +202,12 @@ export function Pricing({
           </div>
         </div>
 
-        <button className="btn primary full" type="submit">
-          {editandoId ? "Salvar alterações" : "Cadastrar produto"}
+        <button className="btn primary full" type="submit" disabled={enviando}>
+          {enviando
+            ? "Salvando..."
+            : editandoId
+              ? "Salvar alterações"
+              : "Cadastrar produto"}
         </button>
       </form>
 
@@ -219,7 +234,17 @@ export function Pricing({
 
               return (
                 <div className="list-row" key={produto.id}>
-                  {produto.foto_url && <img className="thumb" src={produto.foto_url} alt="" />}
+                  {produto.foto_url && (
+                    <img
+                      className="thumb"
+                      src={produto.foto_url}
+                      alt=""
+                      width={46}
+                      height={46}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  )}
                   <div className="grow">
                     <strong>{produto.nome}</strong>
                     <p className="muted">
@@ -265,7 +290,17 @@ export function Pricing({
             <div className="list">
               {archivedProducts.map((produto) => (
                 <div className="list-row" key={produto.id}>
-                  {produto.foto_url && <img className="thumb" src={produto.foto_url} alt="" />}
+                  {produto.foto_url && (
+                    <img
+                      className="thumb"
+                      src={produto.foto_url}
+                      alt=""
+                      width={46}
+                      height={46}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  )}
                   <div className="grow">
                     <strong>{produto.nome}</strong>
                     <p className="muted">
