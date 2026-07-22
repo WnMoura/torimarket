@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { BestSellers, SalesTable } from "../components/panels";
 import { Empty } from "../components/ui";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 import { fmtMoney, num } from "../lib/format";
 
 const ESTOQUE_BAIXO = 5;
@@ -22,6 +23,7 @@ const TOM_DO_STATUS = {
 
 export function Stock({ products, sales, items, clients, onNovaVenda, excluirVenda, onEditarVenda }) {
   const [filtros, setFiltros] = useState({ categoria: "", status: "", ordem: "nome" });
+  const ehMobile = useMediaQuery("(max-width: 760px)");
 
   const categorias = useMemo(
     () => [...new Set(products.map((p) => p.categoria).filter(Boolean))],
@@ -54,29 +56,83 @@ export function Stock({ products, sales, items, clients, onNovaVenda, excluirVen
           </button>
         </div>
 
+        {/*
+          O rótulo padrão de cada filtro é o nome do campo, não "todas as categorias":
+          cabe em meia largura no celular e continua dizendo o que o controle faz.
+          O nome completo vai no aria-label, para quem usa leitor de tela.
+        */}
         <div className="filters">
-          <select value={filtros.categoria} onChange={alterarFiltro("categoria")}>
-            <option value="">Todas categorias</option>
+          <select
+            aria-label="Filtrar por categoria"
+            value={filtros.categoria}
+            onChange={alterarFiltro("categoria")}
+          >
+            <option value="">Categoria</option>
             {categorias.map((categoria) => (
               <option key={categoria}>{categoria}</option>
             ))}
           </select>
 
-          <select value={filtros.status} onChange={alterarFiltro("status")}>
-            <option value="">Todos status</option>
+          <select
+            aria-label="Filtrar por status do estoque"
+            value={filtros.status}
+            onChange={alterarFiltro("status")}
+          >
+            <option value="">Status</option>
             <option>Em estoque</option>
             <option>Estoque baixo</option>
             <option>Sem estoque</option>
           </select>
 
-          <select value={filtros.ordem} onChange={alterarFiltro("ordem")}>
-            <option value="nome">Nome</option>
-            <option value="estoque">Estoque</option>
+          <select
+            aria-label="Ordenar a lista"
+            value={filtros.ordem}
+            onChange={alterarFiltro("ordem")}
+          >
+            <option value="nome">Ordem: nome</option>
+            <option value="estoque">Ordem: estoque</option>
           </select>
         </div>
 
         {visiveis.length === 0 ? (
           <Empty>Nenhum produto para os filtros escolhidos.</Empty>
+        ) : ehMobile ? (
+          /*
+           * A tabela no celular mostrava produto, categoria, cor e tamanhos — e deixava
+           * preço, estoque e status fora da tela. São exatamente os três que se abre esta
+           * tela para ver. Aqui eles vêm primeiro; categoria e tamanhos descem para a
+           * linha de apoio, e a pílula só aparece quando há algo a fazer.
+           */
+          <div className="stack-list">
+            {visiveis.map((produto) => {
+              const status = statusDoEstoque(produto);
+              const tom = TOM_DO_STATUS[status];
+              const apoio = [produto.categoria, produto.tamanhos, produto.cor]
+                .filter(Boolean)
+                .join(" · ");
+
+              return (
+                <article className="stack-row" key={produto.id}>
+                  <div className="stack-head">
+                    <strong>{produto.nome}</strong>
+                    <strong>{fmtMoney(produto.preco_final)}</strong>
+                  </div>
+
+                  <div className="stack-foot">
+                    <span className="muted">{apoio || "Sem categoria"}</span>
+                    <span className="stack-estoque">
+                      {tom ? (
+                        <span className={`status-pill ${tom}`}>{status}</span>
+                      ) : (
+                        <span className="muted">em estoque</span>
+                      )}
+                      <strong>{produto.estoque}</strong>
+                    </span>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
         ) : (
           <div className="table-wrap">
             <table>
@@ -118,6 +174,7 @@ export function Stock({ products, sales, items, clients, onNovaVenda, excluirVen
       <div className="grid">
         <BestSellers items={items} />
         <SalesTable
+          compacto
           title="Últimas vendas"
           sales={sales.slice(0, 5)}
           clients={clients}

@@ -307,6 +307,18 @@
       "caption": {
         "displayName": "Caption",
         "purpose": "Sub-linha de métrica, descrição de linha de lista, rótulo de campo."
+      },
+      "metric-compact": {
+        "displayName": "Metric compact",
+        "purpose": "Valor da métrica abaixo de 760px, onde os cards dividem a largura."
+      },
+      "caption-compact": {
+        "displayName": "Caption compact",
+        "purpose": "Sub-linha da métrica no celular."
+      },
+      "label-compact": {
+        "displayName": "Label compact",
+        "purpose": "Rótulo da métrica no celular; piso da escala, nada abaixo disso."
       }
     },
     "shadows": [
@@ -495,6 +507,14 @@
       "description": "Pergunta destrutiva: consequência em prosa, Cancelar focado, destrutivo em contorno.",
       "html": "<div class=\"ds-confirm\"><h2>Excluir a venda de R$ 259,80?</h2><p>Os produtos dela voltam para o estoque e ela some do DRE e dos relatórios. Não dá para desfazer.</p><div class=\"ds-confirm-actions\"><button class=\"ds-btn-secondary\">Cancelar</button><button class=\"ds-btn-danger\">Excluir venda</button></div></div>",
       "css": ".ds-confirm { width: min(460px, 100%); background: #121419; border: 1px solid #2b303b; border-radius: 8px; padding: 20px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #f7f7f8; box-shadow: 0 18px 60px rgba(0,0,0,0.34); } .ds-confirm h2 { font-size: 1.1rem; margin: 0 0 18px; } .ds-confirm p { margin: 0 0 20px; color: #d8dbe1; max-width: 62ch; line-height: 1.55; } .ds-confirm-actions { display: flex; justify-content: flex-end; gap: 10px; } .ds-confirm-actions button { min-height: 42px; border-radius: 8px; padding: 9px 13px; font: inherit; cursor: pointer; } .ds-btn-secondary { background: #20242d; color: #f7f7f8; border: 1px solid #2b303b; } .ds-btn-danger { background: rgba(255,85,120,0.09); color: #ff5578; border: 1px solid rgba(255,85,120,0.42); }"
+    },
+    {
+      "name": "Stack Row",
+      "kind": "card",
+      "refersTo": null,
+      "description": "O que a linha de tabela vira quando falta largura: identificador e valor no topo, apoio embaixo.",
+      "html": "<article class=\"ds-stack-row\"><div class=\"ds-stack-head\"><strong>Conjunto Brisa</strong><strong>R$ 149,90</strong></div><div class=\"ds-stack-foot\"><span>Conjunto Short · M,G</span><span class=\"ds-pill warn\">Estoque baixo</span></div></article>",
+      "css": ".ds-stack-row { display: grid; gap: 6px; padding: 12px; border: 1px solid #2b303b; background: #181b22; border-radius: 8px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #f7f7f8; } .ds-stack-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; } .ds-stack-head strong:last-child { flex: 0 0 auto; white-space: nowrap; } .ds-stack-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 38px; font-size: 0.9rem; color: #a7adb8; } .ds-pill.warn { color: #f5c84b; border: 1px solid rgba(245,200,75,0.4); background: rgba(245,200,75,0.1); border-radius: 999px; padding: 4px 8px; font-size: 0.78rem; }"
     }
   ],
   "narrative": {
@@ -553,6 +573,11 @@
         "name": "The Tabular Rule",
         "body": "font-variant-numeric: tabular-nums no body: em coluna de preço e em valor que atualiza, o dígito não pode mudar de largura.",
         "section": "typography"
+      },
+      {
+        "name": "The Compact Step Rule",
+        "body": "Abaixo de 760px o metric card divide a largura com outro e três papéis ganham um degrau menor: metric-compact (1.25rem), caption-compact (0.8rem) e label-compact (0.68rem). Degraus nomeados do sistema, e param aí.",
+        "section": "typography"
       }
     ],
     "dos": [
@@ -566,7 +591,8 @@
       "Do respeitar env(safe-area-inset-*) em shell, modal e gaveta.",
       "Do crescer o alvo para 44px em @media (pointer: coarse); no ponteiro fino, 38–43px basta.",
       "Do dar a todo controle o anel de foco do sistema (outline 2px branco, offset 2px) e travar o botão enquanto o envio corre.",
-      "Do dimensionar ícone por regra (.btn svg 16px, .icon-button svg 17px), nunca por size={} em cada chamada."
+      "Do dimensionar ícone por regra (.btn svg 16px, .icon-button svg 17px), nunca por size={} em cada chamada.",
+      "Do trocar tabela por .stack-list abaixo de 760px e em qualquer coluna estreita (prop compacto): rolagem horizontal não é afordância."
     ],
     "donts": [
       "Don't parecer ERP antigo / sistema de contador: cinza sobre cinza, fileira de abas, fonte abaixo de 0.75rem, densidade sem ritmo de espaço.",

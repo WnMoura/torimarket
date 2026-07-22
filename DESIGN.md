@@ -62,6 +62,23 @@ typography:
     fontSize: "0.9rem"
     fontWeight: 400
     lineHeight: 1.4
+  metric-compact:
+    fontFamily: "'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "1.25rem"
+    fontWeight: 800
+    lineHeight: 1.1
+    letterSpacing: "-0.02em"
+  caption-compact:
+    fontFamily: "'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.8rem"
+    fontWeight: 400
+    lineHeight: 1.4
+  label-compact:
+    fontFamily: "'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.68rem"
+    fontWeight: 500
+    lineHeight: 1.25
+    letterSpacing: "0.06em"
   label:
     fontFamily: "'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: "0.75rem"
@@ -256,6 +273,11 @@ valor que atualiza, o dígito não pode mudar de largura.
 **The Fixed Scale Rule.** Fora do título de tela e do valor de métrica, todo tamanho é fixo em
 rem. Tipografia fluida em UI de produto encolhe onde não devia; responsividade aqui é estrutural.
 
+**The Compact Step Rule.** Abaixo de 760px o metric card passa a dividir a largura com outro, e
+três papéis ganham um degrau menor: metric cai para `metric-compact` (1.25rem), a sub-linha para
+`caption-compact` (0.8rem) e o rótulo para `label-compact` (0.68rem). São degraus nomeados do
+sistema, não um encolhimento improvisado — e param aí: nada abaixo de 0.68rem.
+
 **The Caps-Are-Labels Rule.** Caixa alta com tracking existe só para rótulo de dado (métrica,
 coluna de tabela, eyebrow do topbar). Nunca em título de seção, nunca em frase, nunca em botão.
 
@@ -335,6 +357,16 @@ stroke 1.9. Variante `danger` troca só cor e borda. Todo icon button precisa de
 Largura total, `border-collapse`, mínimo de 720px com rolagem horizontal em `.table-wrap`
 (560px abaixo de 480px). Cabeçalho em label caixa alta `muted`; célula em `soft`; divisória de
 1px em `line` no rodapé de cada linha. Sem zebra, sem borda vertical.
+
+**Tabela só existe onde há largura para todas as colunas.** Abaixo de 760px — e em qualquer
+coluna estreita, via a prop `compacto` — ela é substituída por `.stack-list`. Rolagem horizontal
+não é afordância: ninguém descobre que a coluna "Estoque" existe arrastando a tabela para o lado.
+
+### Stack list
+A forma que a tabela assume quando falta largura. Uma `article` por registro, em `panel-raised`:
+identificador à esquerda e o número que importa à direita, na mesma linha de topo; apoio (data,
+pagamento, categoria) embaixo, em `caption`; ações no canto inferior direito. O nome cede espaço
+e quebra; o valor nunca quebra. Lista de itens longa é cortada em duas linhas por `line-clamp`.
 
 ### Status Pill
 Pílula (999px) com borda `line`, fundo herdado, texto `muted` a 0.78rem. Estado neutro por

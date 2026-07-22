@@ -548,6 +548,72 @@ h3 { font-size: 0.98rem; margin-bottom: 10px; }
 .positive { color: var(--green); }
 .danger-text { color: var(--danger); }
 
+/* Lista que substitui a tabela no celular: o que importa em cima e à direita,
+   o apoio embaixo. Nenhuma coluna fica fora da tela. */
+.stack-list {
+  display: grid;
+  gap: 10px;
+}
+
+.stack-row {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  border-radius: 8px;
+}
+
+.stack-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* O nome cede espaço; o valor nunca quebra. */
+.stack-head strong:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.stack-head strong:last-child {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* Lista de produtos da venda: duas linhas bastam para reconhecer a venda. */
+.stack-produtos {
+  margin: 0;
+  color: var(--soft);
+  font-size: 0.9rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.stack-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 38px;
+  font-size: 0.9rem;
+}
+
+.stack-foot > .muted {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.stack-estoque {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
 .table-wrap { overflow-x: auto; }
 
 table {
@@ -604,6 +670,12 @@ input, select, textarea {
 textarea {
   resize: vertical;
   min-height: 92px;
+}
+
+/* A seta do select é desenhada pelo navegador dentro da caixa: sem esta folga,
+   rótulo longo encosta nela. */
+select {
+  padding-right: 32px;
 }
 
 /* O cinza padrão do navegador dá 4,19:1 sobre o poço — abaixo do mínimo de 4,5:1. */
@@ -921,9 +993,46 @@ html:has(dialog[open]) {
     height: 18px;
   }
 
-  .metrics,
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* Empilhado em largura cheia, cada métrica gastava ~200px: eram quase 800px de
+     rolagem para ler quatro números. Duas colunas devolvem metade da tela inicial. */
+  .metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .metric-card {
+    min-height: 0;
+    padding: 13px;
+  }
+
+  /* Rótulo de duas linhas ("Valor em caixa (estoque)") ao lado de um de uma linha
+     empurrava os valores para alturas diferentes. Reservando duas linhas, os quatro
+     números da grade ficam na mesma altura. */
+  .metric-label {
+    margin-bottom: 8px;
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    line-height: 1.25;
+    min-height: 2.5em;
+  }
+
+  .metric-value {
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+    /* Última defesa: valor de seis dígitos quebra em vez de vazar do card. */
+    overflow-wrap: anywhere;
+  }
+
+  .metric-sub { margin-top: 6px; font-size: 0.8rem; }
+
+  /* Dois filtros por linha em vez de três linhas de um. */
+  .filters > input,
+  .filters > select {
+    flex-basis: 140px;
   }
 
   .chart { gap: 7px; }

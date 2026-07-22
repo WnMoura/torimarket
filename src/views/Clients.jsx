@@ -29,7 +29,9 @@ export function Clients({ clients, excluir, onNovo, onEditar }) {
         <h2>{visiveis.length} clientes</h2>
         <div className="filters">
           <input
-            placeholder="Buscar nome, contato ou e-mail"
+            type="search"
+            aria-label="Buscar cliente por nome, contato ou e-mail"
+            placeholder="Buscar cliente"
             value={busca}
             onChange={(evento) => setBusca(evento.target.value)}
           />

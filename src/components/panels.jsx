@@ -4,15 +4,31 @@ import { paymentSummary } from "../lib/calc";
 import { dateBR, fmtMoney, num } from "../lib/format";
 import { Empty, IconButton } from "./ui";
 import { useConfirmacao } from "./useConfirmacao";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 
-export function SalesTable({ title, sales, clients, excluirVenda, onEditarVenda }) {
+const nomesDosProdutos = (venda) =>
+  (venda.itens_venda || [])
+    .map((item) => item.produtos?.nome)
+    .filter(Boolean)
+    .join(", ") || "-";
+
+/**
+ * `compacto` força a lista mesmo no desktop: numa coluna lateral estreita a tabela
+ * esconderia colunas do mesmo jeito que escondia no celular. Quem decide é quem
+ * conhece a largura disponível — o layout da tela, não este componente.
+ */
+export function SalesTable({ title, sales, clients, excluirVenda, onEditarVenda, compacto }) {
   const temAcoes = Boolean(excluirVenda || onEditarVenda);
   const [confirmar, dialogo] = useConfirmacao();
+  const emLista = useMediaQuery("(max-width: 760px)") || compacto;
 
   const nomePorId = useMemo(
     () => Object.fromEntries(clients.map((c) => [c.id, c.nome])),
     [clients],
   );
+
+  const nomeDoCliente = (venda) =>
+    venda.clientes?.nome || nomePorId[venda.cliente_id] || "Cliente avulso";
 
   async function remover(venda) {
     const confirmado = await confirmar({
@@ -30,6 +46,48 @@ export function SalesTable({ title, sales, clients, excluirVenda, onEditarVenda 
       <h2>{title}</h2>
       {sales.length === 0 ? (
         <Empty>Nenhuma venda registrada.</Empty>
+      ) : emLista ? (
+        /*
+         * No celular a tabela mostrava cliente, produto e valor — e empurrava data,
+         * pagamento e as ações para fora da tela, atrás de uma rolagem que nada anuncia.
+         * A lista põe o valor ao lado do nome e o resto embaixo, na ordem em que se lê.
+         */
+        <div className="stack-list">
+          {sales.map((venda) => (
+            <article className="stack-row" key={venda.id}>
+              <div className="stack-head">
+                <strong>{nomeDoCliente(venda)}</strong>
+                <strong>{fmtMoney(venda.total)}</strong>
+              </div>
+
+              <p className="stack-produtos">{nomesDosProdutos(venda)}</p>
+
+              <div className="stack-foot">
+                <span className="muted">
+                  {dateBR(venda.criado_em)} · {paymentSummary(venda)}
+                </span>
+                {temAcoes && (
+                  <div className="icon-actions">
+                    {onEditarVenda && (
+                      <IconButton title="Editar venda" onClick={() => onEditarVenda(venda)}>
+                        <Pencil />
+                      </IconButton>
+                    )}
+                    {excluirVenda && (
+                      <IconButton
+                        danger
+                        title="Excluir venda (devolve o estoque)"
+                        onClick={() => remover(venda)}
+                      >
+                        <Trash2 />
+                      </IconButton>
+                    )}
+                  </div>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
       ) : (
         <div className="table-wrap">
           <table>
@@ -50,13 +108,8 @@ export function SalesTable({ title, sales, clients, excluirVenda, onEditarVenda 
             <tbody>
               {sales.map((venda) => (
                 <tr key={venda.id}>
-                  <td>{venda.clientes?.nome || nomePorId[venda.cliente_id] || "Cliente avulso"}</td>
-                  <td>
-                    {(venda.itens_venda || [])
-                      .map((item) => item.produtos?.nome)
-                      .filter(Boolean)
-                      .join(", ") || "-"}
-                  </td>
+                  <td>{nomeDoCliente(venda)}</td>
+                  <td>{nomesDosProdutos(venda)}</td>
                   <td>{fmtMoney(venda.total)}</td>
                   <td>{paymentSummary(venda)}</td>
                   <td>{dateBR(venda.criado_em)}</td>
