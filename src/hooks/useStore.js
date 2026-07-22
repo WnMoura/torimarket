@@ -8,6 +8,7 @@ export const CONFIG_PADRAO = {
   nome_negocio: "Meu negócio",
   nome_usuario: "Usuário",
   logo_url: "",
+  foto_usuario: "",
   taxa_credito: 4.5,
   taxa_credito_2x: 0,
   taxa_credito_3x: 0,
@@ -181,6 +182,16 @@ export function useStore() {
     return supabase.storage.from("produtos").getPublicUrl(caminho).data.publicUrl;
   }
 
+  /**
+   * Apaga do bucket a imagem que acabou de ser trocada ou removida. Melhor esforço:
+   * o registro já foi gravado, e um arquivo órfão não justifica falhar o salvamento.
+   */
+  async function removerFotoAntiga(anterior, atual) {
+    if (!anterior || anterior === atual) return;
+    const caminho = caminhoDaFoto(anterior);
+    if (caminho) await supabase.storage.from("produtos").remove([caminho]);
+  }
+
   const acoes = {
     salvarProduto: (form, arquivo, editandoId) =>
       executar(async () => {
@@ -227,15 +238,19 @@ export function useStore() {
         if (erro) throw erro;
       }),
 
-    salvarConfiguracoes: (form, arquivoLogo) =>
+    /** `arquivos` é `{ logo, foto }`; cada um é opcional e mantém o valor atual quando ausente. */
+    salvarConfiguracoes: (form, arquivos = {}) =>
       executar(async () => {
-        // Reaproveita o mesmo upload das fotos de produto; sem arquivo novo, mantém a logo atual.
-        const logo_url = await subirFoto(arquivoLogo, form.logo_url);
+        // Reaproveita o mesmo upload das fotos de produto; sem arquivo novo, mantém o que está lá.
+        const logo_url = await subirFoto(arquivos.logo, form.logo_url);
+        const foto_usuario = await subirFoto(arquivos.foto, form.foto_usuario);
+
         const { error: erro } = await supabase.from("configuracoes").upsert({
           id: 1,
           nome_negocio: form.nome_negocio,
           nome_usuario: form.nome_usuario,
           logo_url,
+          foto_usuario,
           taxa_credito: num(form.taxa_credito),
           taxa_credito_2x: num(form.taxa_credito_2x),
           taxa_credito_3x: num(form.taxa_credito_3x),
@@ -244,6 +259,12 @@ export function useStore() {
           taxa_dinheiro: num(form.taxa_dinheiro),
         });
         if (erro) throw erro;
+
+        // O que estava gravado é a referência certa da imagem antiga — o form já perdeu
+        // a URL quando o usuário clicou em "remover".
+        const anterior = data.settings || {};
+        await removerFotoAntiga(anterior.logo_url, logo_url);
+        await removerFotoAntiga(anterior.foto_usuario, foto_usuario);
       }),
 
     salvarLancamento: (form) =>
