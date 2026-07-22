@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { Field, IconButton } from "../components/ui";
 import { useConfirmacao } from "../components/useConfirmacao";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 import { salesIn, sumRevenue } from "../lib/calc";
 import { dateBR, fmtMoney, monthKey, num, today } from "../lib/format";
 
@@ -19,6 +20,7 @@ export function Cash({
   const [form, setForm] = useState(LANCAMENTO_VAZIO);
   const [enviando, setEnviando] = useState(false);
   const [confirmar, dialogo] = useConfirmacao();
+  const ehMobile = useMediaQuery("(max-width: 760px)");
 
   const { linhas, saldo } = useMemo(() => {
     const vendasDoMes = salesIn(sales, periodo);
@@ -109,6 +111,42 @@ export function Cash({
           <strong className={saldo < 0 ? "danger-text" : ""}>{fmtMoney(saldo)}</strong>
         </p>
 
+        {ehMobile ? (
+          /*
+           * Última tabela que ainda renderizava no celular. Com min-width de 560px numa
+           * tela de 390 ela era a única coisa fazendo a página inteira arrastar para o
+           * lado. O sinal antes do valor dispensa a coluna "tipo".
+           */
+          <div className="stack-list">
+            {linhas.map((linha) => (
+              <article className="stack-row" key={linha.chave}>
+                <div className="stack-head">
+                  <strong>{linha.descricao}</strong>
+                  <strong className={linha.tipo === "entrada" ? "positive" : ""}>
+                    {linha.tipo === "entrada" ? "+" : "−"} {fmtMoney(linha.valor)}
+                  </strong>
+                </div>
+
+                <div className="stack-foot">
+                  <span className="muted">
+                    {dateBR(linha.data)} · {linha.tipo}
+                  </span>
+                  <IconButton
+                    danger
+                    title={
+                      linha.origem === "venda"
+                        ? "Excluir venda (devolve o estoque)"
+                        : "Excluir lançamento"
+                    }
+                    onClick={() => remover(linha)}
+                  >
+                    <Trash2 />
+                  </IconButton>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
         <div className="table-wrap">
           <table>
             <thead>
@@ -147,6 +185,7 @@ export function Cash({
             </tbody>
           </table>
         </div>
+        )}
       </div>
 
       <form className="card grid" onSubmit={enviar}>

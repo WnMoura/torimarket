@@ -50,7 +50,9 @@ body {
   /* Números de mesma largura: coluna de preço não dança a cada dígito. */
   font-variant-numeric: tabular-nums;
   -webkit-text-size-adjust: 100%;
-  overflow-x: hidden;
+  /* Sem `overflow-x: hidden` de propósito. Ele não impedia a rolagem lateral — só
+     escondia a causa (uma tabela larga demais para a tela). Se algo estourar de novo,
+     é para aparecer no teste, não para ser varrido para baixo do tapete. */
 }
 
 button, input, select, textarea {
