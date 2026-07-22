@@ -27,20 +27,16 @@ function LucroLiquidoTrend({ meses }) {
       {meses.map((mes) => (
         <div className="bar-wrap" key={mes.label}>
           {mes.variacao !== null && (
-            <span
-              className={mes.variacao >= 0 ? "positive" : "danger-text"}
-              style={{ fontSize: "0.75rem", fontWeight: 700 }}
-            >
+            <span className={`bar-delta ${mes.variacao >= 0 ? "positive" : "danger-text"}`}>
               {mes.variacao >= 0 ? "▲" : "▼"} {Math.abs(mes.variacao).toFixed(0)}%
             </span>
           )}
           <div
-            className="bar"
+            className={`bar ${mes.liquido < 0 ? "negativa" : ""}`}
             data-tip={`${mes.label} - ${fmtMoney(mes.liquido)}`}
             style={{
               // Teto em 80% deixa a faixa de cima livre para o selo de variação não estourar.
               height: `${Math.max(5, (Math.abs(mes.liquido) / maiorAbsoluto) * 80)}%`,
-              ...(mes.liquido < 0 && { background: "linear-gradient(180deg, #ff5578, #7a2740)" }),
             }}
           />
           <span className="bar-label">{mes.label}</span>

@@ -85,7 +85,7 @@ export function Dashboard({ sales, items, products, clients, settings, excluirVe
           label="Lucro líquido (dia)"
           value={fmtMoney(totais.liquido)}
           sub={`Taxas: ${fmtMoney(totais.taxas)}`}
-          danger
+          danger={totais.liquido < 0}
         />
       </section>
 
@@ -93,7 +93,12 @@ export function Dashboard({ sales, items, products, clients, settings, excluirVe
         <div className="card">
           <div className="toolbar">
             <h2>Vendas por período</h2>
-            <Segment value={modo} setValue={setModo} options={["Dia", "Semana", "Mês"]} />
+            <Segment
+              label="Agrupar o gráfico por"
+              value={modo}
+              setValue={setModo}
+              options={["Dia", "Semana", "Mês"]}
+            />
           </div>
           <BarChart bars={barras} />
         </div>

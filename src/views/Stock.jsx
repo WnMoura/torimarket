@@ -13,6 +13,13 @@ function statusDoEstoque(produto) {
   return "Em estoque";
 }
 
+/** A cor acompanha o rótulo; quem não distingue cor continua lendo o texto. */
+const TOM_DO_STATUS = {
+  "Sem estoque": "danger",
+  "Estoque baixo": "warn",
+  "Em estoque": "",
+};
+
 export function Stock({ products, sales, items, clients, onNovaVenda, excluirVenda, onEditarVenda }) {
   const [filtros, setFiltros] = useState({ categoria: "", status: "", ordem: "nome" });
 
@@ -43,7 +50,7 @@ export function Stock({ products, sales, items, clients, onNovaVenda, excluirVen
         <div className="toolbar">
           <h2>Estoque ({visiveis.length})</h2>
           <button className="btn primary" type="button" onClick={onNovaVenda}>
-            <Plus size={17} /> Registrar venda
+            <Plus aria-hidden="true" /> Registrar venda
           </button>
         </div>
 
@@ -75,29 +82,33 @@ export function Stock({ products, sales, items, clients, onNovaVenda, excluirVen
             <table>
               <thead>
                 <tr>
-                  <th>Produto</th>
-                  <th>Categoria</th>
-                  <th>Cor</th>
-                  <th>Tamanhos</th>
-                  <th>Preço</th>
-                  <th>Estoque</th>
-                  <th>Status</th>
+                  <th scope="col">Produto</th>
+                  <th scope="col">Categoria</th>
+                  <th scope="col">Cor</th>
+                  <th scope="col">Tamanhos</th>
+                  <th scope="col">Preço</th>
+                  <th scope="col">Estoque</th>
+                  <th scope="col">Status</th>
                 </tr>
               </thead>
               <tbody>
-                {visiveis.map((produto) => (
-                  <tr key={produto.id}>
-                    <td>{produto.nome}</td>
-                    <td>{produto.categoria}</td>
-                    <td>{produto.cor || "-"}</td>
-                    <td>{produto.tamanhos || "-"}</td>
-                    <td>{fmtMoney(produto.preco_final)}</td>
-                    <td>{produto.estoque}</td>
-                    <td>
-                      <span className="status-pill">{statusDoEstoque(produto)}</span>
-                    </td>
-                  </tr>
-                ))}
+                {visiveis.map((produto) => {
+                  const status = statusDoEstoque(produto);
+
+                  return (
+                    <tr key={produto.id}>
+                      <td>{produto.nome}</td>
+                      <td>{produto.categoria}</td>
+                      <td>{produto.cor || "-"}</td>
+                      <td>{produto.tamanhos || "-"}</td>
+                      <td>{fmtMoney(produto.preco_final)}</td>
+                      <td>{produto.estoque}</td>
+                      <td>
+                        <span className={`status-pill ${TOM_DO_STATUS[status]}`}>{status}</span>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
