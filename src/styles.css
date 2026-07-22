@@ -1,19 +1,41 @@
 :root {
   --bg: #08090b;
+  --rail: #0d0f13;
+  --well: #0c0e12;
+  --well-readonly: #101217;
   --panel: #121419;
   --panel-2: #181b22;
   --panel-3: #20242d;
   --line: #2b303b;
+  /* Texto sobre o acento branco. */
+  --on-accent: #08090b;
+  --bar-end: #8f98a8;
   --text: #f7f7f8;
   --muted: #a7adb8;
   --soft: #d8dbe1;
   --accent: #ffffff;
   --danger: #ff5578;
   --danger-bg: #3a111d;
+  --danger-ink: #ffd5dd;
   --green: #37d67a;
   --yellow: #f5c84b;
   --blue: #68a6ff;
   --shadow: 0 18px 60px rgba(0, 0, 0, 0.34);
+
+  /* Poços e contornos das cores semânticas: fundo com a própria cor a 10%, borda a 42%. */
+  --danger-line: rgba(255, 85, 120, 0.42);
+  --danger-wash: rgba(255, 85, 120, 0.1);
+  --yellow-line: rgba(245, 200, 75, 0.4);
+  --yellow-wash: rgba(245, 200, 75, 0.1);
+  --green-line: rgba(55, 214, 122, 0.4);
+
+  /* Escala de camadas, em ordem de leitura. A modal não entra: `<dialog>` vive no top layer. */
+  --z-drawer-scrim: 19;
+  --z-drawer: 20;
+
+  /* Sem isto o navegador trata a página como clara: seletor de data, botão de
+     arquivo e menus nativos saem em tema claro no meio do painel escuro. */
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -24,7 +46,9 @@ body {
   min-height: 100dvh;
   background: var(--bg);
   color: var(--text);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Inter Variable", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* Números de mesma largura: coluna de preço não dança a cada dígito. */
+  font-variant-numeric: tabular-nums;
   -webkit-text-size-adjust: 100%;
   overflow-x: hidden;
 }
@@ -35,14 +59,31 @@ button, input, select, textarea {
 
 button { cursor: pointer; }
 
+/* Anel de foco projetado, um só para todo o sistema: o padrão do navegador some
+   sobre o grafite e não combina com o raio de 8px dos controles. */
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+:where(button, input, select, textarea):disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Título curto não deve quebrar em uma palavra órfã; texto corrido, idem. */
+h1, h2, h3 { text-wrap: balance; }
+p { text-wrap: pretty; }
+
 .sidebar {
   position: fixed;
   inset: 0 auto 0 0;
   width: 276px;
-  background: #0d0f13;
+  background: var(--rail);
   border-right: 1px solid var(--line);
   padding: 22px 16px;
-  z-index: 20;
+  z-index: var(--z-drawer);
 }
 
 .profile {
@@ -57,17 +98,28 @@ button { cursor: pointer; }
 .avatar {
   width: 44px;
   height: 44px;
+  flex: 0 0 auto;
   border-radius: 50%;
   display: grid;
   place-items: center;
   background: var(--accent);
-  color: #08090b;
+  color: var(--on-accent);
   font-weight: 800;
 }
 
+/* Com foto, o círculo é a própria imagem — o fundo branco da inicial sairia como borda. */
+img.avatar {
+  object-fit: cover;
+  background: var(--panel-2);
+}
+
+/* E-mail longo não tem onde quebrar: sem o corte ele passava por baixo do botão Sair. */
 .profile strong,
 .profile span {
   display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .profile span {
@@ -75,6 +127,11 @@ button { cursor: pointer; }
   color: var(--muted);
   font-size: 0.75rem;
   letter-spacing: 0.08em;
+}
+
+/* O botão é do tamanho que é: quem cede espaço é o texto. */
+.profile .icon-button {
+  flex: 0 0 auto;
 }
 
 .nav-item {
@@ -115,7 +172,7 @@ button { cursor: pointer; }
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.6);
-  z-index: 19;
+  z-index: var(--z-drawer-scrim);
 }
 
 @media (min-width: 761px) {
@@ -124,15 +181,48 @@ button { cursor: pointer; }
   }
 }
 
-/* Campo da logo: preview + input de arquivo lado a lado, com quebra quando aperta. */
-.logo-row {
+/* Campo de imagem: prévia + ações lado a lado, com quebra quando aperta. */
+.image-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  border-radius: 8px;
+}
+
+.image-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
-.logo-row input[type="file"] {
-  flex: 1;
-  min-width: 0;
-  font-size: 0.85rem;
+.avatar-preview {
+  width: 56px;
+  height: 56px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--line);
+}
+
+/* Sem imagem ainda: um vazio que tem a forma do que vai entrar ali. */
+.image-placeholder {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  background: var(--well);
+}
+
+.image-placeholder.redondo {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
 }
 
 .app-shell {
@@ -174,11 +264,30 @@ h3 { font-size: 0.98rem; margin-bottom: 10px; }
   border-radius: 8px;
 }
 
-.menu-button { display: none; }
+/* Duas classes de propósito: `.icon-button` também declara `display` e vem depois no
+   arquivo — com uma classe só, ela vencia e o hambúrguer aparecia vazio no desktop. */
+.icon-button.menu-button {
+  display: none;
+}
+
+.menu-button span {
+  display: block;
+  width: 17px;
+  height: 2px;
+  background: var(--text);
+  margin: 2px 0;
+}
 
 .grid {
   display: grid;
   gap: 16px;
+}
+
+/* Item de grid tem `min-width: auto`: sem isto a tabela de 720px empurra a coluna
+   para fora da viewport em vez de rolar dentro do .table-wrap — e o `overflow-x: hidden`
+   do body corta o excedente em silêncio. */
+.grid > * {
+  min-width: 0;
 }
 
 .metrics {
@@ -195,21 +304,27 @@ h3 { font-size: 0.98rem; margin-bottom: 10px; }
   align-items: start;
 }
 
+/* Sem sombra em repouso: o que separa o card do fundo é o degrau de cor mais a régua
+   de 1px. A sombra fica para quem de fato flutua — modal, gaveta e o card de login. */
 .card {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 18px;
-  box-shadow: var(--shadow);
 }
 
 .metric-card {
   min-height: 126px;
 }
 
+/* Prejuízo: fundo do poço vermelho, chapado. Gradiente aqui só decorava. */
 .metric-card.danger {
-  background: linear-gradient(145deg, var(--danger-bg), #1b0d13);
-  border-color: rgba(255, 85, 120, 0.45);
+  background: var(--danger-bg);
+  border-color: var(--danger-line);
+}
+
+.metric-card.danger .metric-value {
+  color: var(--danger);
 }
 
 .metric-label {
@@ -229,7 +344,7 @@ h3 { font-size: 0.98rem; margin-bottom: 10px; }
 .metric-sub {
   color: var(--muted);
   margin-top: 8px;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
 }
 
 .toolbar {
@@ -247,12 +362,21 @@ h3 { font-size: 0.98rem; margin-bottom: 10px; }
   flex-wrap: wrap;
 }
 
+/* Campo herda `width: 100%` do estilo global de formulário; dentro do flex isso faz
+   cada um exigir a linha inteira. Aqui eles dividem a linha e só quebram quando aperta. */
+.filters > input,
+.filters > select {
+  width: auto;
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
 .segmented {
   display: inline-flex;
   padding: 4px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #0d0f13;
+  background: var(--rail);
 }
 
 .segmented button {
@@ -265,7 +389,7 @@ h3 { font-size: 0.98rem; margin-bottom: 10px; }
 
 .segmented button.active {
   background: var(--accent);
-  color: #090a0d;
+  color: var(--on-accent);
 }
 
 .chart {
@@ -294,8 +418,18 @@ h3 { font-size: 0.98rem; margin-bottom: 10px; }
   max-width: 56px;
   min-height: 8px;
   border-radius: 7px 7px 3px 3px;
-  background: linear-gradient(180deg, #ffffff, #8f98a8);
+  background: linear-gradient(180deg, var(--accent), var(--bar-end));
   position: relative;
+}
+
+/* Mês no vermelho: a barra troca de cor, e o selo de variação diz a direção. */
+.bar.negativa {
+  background: linear-gradient(180deg, var(--danger), var(--danger-bg));
+}
+
+.bar-delta {
+  font-size: 0.75rem;
+  font-weight: 700;
 }
 
 .bar:hover::after {
@@ -305,8 +439,8 @@ h3 { font-size: 0.98rem; margin-bottom: 10px; }
   bottom: calc(100% + 10px);
   transform: translateX(-50%);
   white-space: nowrap;
-  background: #ffffff;
-  color: #090a0d;
+  background: var(--accent);
+  color: var(--on-accent);
   border-radius: 6px;
   padding: 7px 9px;
   font-size: 0.78rem;
@@ -326,6 +460,34 @@ h3 { font-size: 0.98rem; margin-bottom: 10px; }
   text-align: center;
 }
 
+/* Esqueleto de carregamento: o brilho corre sobre o degrau de cor, sem cor nova. */
+.skeleton {
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--panel-2) 25%, var(--panel-3) 50%, var(--panel-2) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-brilho 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-brilho {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+.skeleton-label { height: 10px; width: 45%; margin-bottom: 18px; }
+.skeleton-value { height: 26px; width: 65%; }
+.skeleton-sub { height: 12px; width: 35%; margin-top: 12px; }
+.skeleton-title { height: 14px; width: 30%; margin-bottom: 18px; }
+.skeleton-chart { height: 244px; }
+.skeleton-row { height: 46px; }
+
+/* Sem movimento: o degrau de cor sozinho já diz "ainda não chegou". */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background: var(--panel-2);
+  }
+}
+
 .list {
   display: grid;
   gap: 10px;
@@ -340,6 +502,45 @@ h3 { font-size: 0.98rem; margin-bottom: 10px; }
   border: 1px solid var(--line);
   background: var(--panel-2);
   border-radius: 8px;
+}
+
+/* Valor de fechamento (total da venda, saldo do mês): é dado, não é título de seção. */
+.total-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 4px 0 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.total-line span {
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.total-line strong {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+}
+
+/* Rótulo que só o leitor de tela precisa (cabeçalho da coluna de ações). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 .muted { color: var(--muted); }
@@ -393,7 +594,7 @@ input, select, textarea {
   width: 100%;
   min-height: 43px;
   color: var(--text);
-  background: #0c0e12;
+  background: var(--well);
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 10px 12px;
@@ -405,13 +606,20 @@ textarea {
   min-height: 92px;
 }
 
+/* O cinza padrão do navegador dá 4,19:1 sobre o poço — abaixo do mínimo de 4,5:1. */
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
 input:focus, select:focus, textarea:focus {
-  border-color: #f7f7f8;
+  border-color: var(--text);
 }
 
 input[readonly] {
   color: var(--muted);
-  background: #101217;
+  background: var(--well-readonly);
 }
 
 .btn {
@@ -428,9 +636,9 @@ input[readonly] {
 }
 
 .btn.primary {
-  background: #ffffff;
-  color: #08090b;
-  border-color: #ffffff;
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
   font-weight: 800;
 }
 
@@ -441,6 +649,30 @@ input[readonly] {
 }
 
 .btn.full { width: 100%; }
+
+/* Tamanho de ícone é regra do sistema, não decisão de cada chamada. */
+.btn svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+
+/* Estados: repouso já existia; faltavam hover e o toque acontecendo. */
+.btn { transition: background 0.15s ease, border-color 0.15s ease; }
+.btn:hover:not(:disabled) { background: var(--line); }
+.btn:active:not(:disabled) { background: var(--panel-2); }
+
+.btn.primary:hover:not(:disabled) { background: var(--soft); border-color: var(--soft); }
+.btn.primary:active:not(:disabled) { background: var(--muted); border-color: var(--muted); }
+
+.btn.danger:hover:not(:disabled) { background: rgba(255, 85, 120, 0.18); }
+
+.icon-button { transition: background 0.15s ease, border-color 0.15s ease; }
+.icon-button:hover:not(:disabled) { background: var(--line); }
+.icon-button.danger:hover:not(:disabled) { background: var(--danger-wash); }
+
+.segmented button { transition: color 0.15s ease, background 0.15s ease; }
+.segmented button:hover:not(.active) { color: var(--text); }
 
 .icon-actions {
   display: flex;
@@ -468,18 +700,26 @@ input[readonly] {
 .alert {
   margin-bottom: 16px;
   padding: 13px 14px;
-  border: 1px solid rgba(255, 85, 120, 0.45);
-  background: rgba(255, 85, 120, 0.1);
-  color: #ffd5dd;
+  border: 1px solid var(--danger-line);
+  background: var(--danger-wash);
+  color: var(--danger-ink);
   border-radius: 8px;
 }
 
 .thumb {
   width: 46px;
   height: 46px;
+  flex: 0 0 auto;
   object-fit: cover;
   border-radius: 8px;
   border: 1px solid var(--line);
+}
+
+.business-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+  border-radius: 6px;
 }
 
 .grow {
@@ -500,51 +740,95 @@ input[readonly] {
   gap: 10px;
 }
 
+/* Quantidade + "Adicionar": duas colunas, o botão pega só a largura do texto. */
+.qty-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.forma-row {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+}
+
+.forma-row .parcelas {
+  width: 74px;
+  flex: 0 0 auto;
+}
+
+.split-footer {
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
 .progress {
   width: 100%;
   height: 10px;
   overflow: hidden;
   border-radius: 999px;
-  background: #0c0e12;
+  background: var(--well);
   border: 1px solid var(--line);
 }
 
 .progress span {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, #ffffff, var(--green));
+  background: linear-gradient(90deg, var(--accent), var(--green));
   width: var(--progress);
 }
 
-.overlay {
-  display: none;
+/* `<dialog>` no top layer: o navegador cuida do Esc, do foco e do inerte por trás. */
+.modal {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.72);
-  z-index: 40;
-}
-
-.overlay.show { display: block; }
-
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 50;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  margin: auto;
   width: min(760px, calc(100vw - 28px));
   max-height: calc(100vh - 36px);
   max-height: calc(100dvh - 36px);
   overflow: auto;
   background: var(--panel);
+  color: var(--text);
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 20px;
   box-shadow: var(--shadow);
 }
 
-.modal.show { display: block; }
+/* O dialog recebe o foco ao abrir só para anunciar o título; ele não é um controle. */
+.modal:focus-visible {
+  outline: none;
+}
+
+/* Uma pergunta curta não precisa de 760px de caixa. */
+.modal.estreita {
+  width: min(460px, calc(100vw - 28px));
+}
+
+.modal::backdrop {
+  background: rgba(0, 0, 0, 0.72);
+}
+
+/* Com a modal aberta o fundo não rola junto. */
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+
+/* Pergunta destrutiva: texto legível como prosa, ações à direita, destrutiva por último. */
+.confirm-message {
+  margin: 0 0 20px;
+  color: var(--soft);
+  max-width: 62ch;
+  line-height: 1.55;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 
 .modal-head {
   display: flex;
@@ -562,6 +846,20 @@ input[readonly] {
   padding: 4px 8px;
   color: var(--muted);
   font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+/* A cor reforça o texto, nunca substitui: o rótulo continua dizendo o estado. */
+.status-pill.warn {
+  color: var(--yellow);
+  border-color: var(--yellow-line);
+  background: var(--yellow-wash);
+}
+
+.status-pill.danger {
+  color: var(--danger);
+  border-color: var(--danger-line);
+  background: var(--danger-wash);
 }
 
 @media (max-width: 1120px) {
@@ -601,13 +899,9 @@ input[readonly] {
   }
 
   .business-name { display: none; }
-  .menu-button { display: inline-grid; flex: 0 0 auto; }
-  .menu-button span {
-    display: block;
-    width: 17px;
-    height: 2px;
-    background: var(--text);
-    margin: 2px 0;
+  .icon-button.menu-button {
+    display: inline-grid;
+    flex: 0 0 auto;
   }
 
   .sidebar-close {
@@ -625,11 +919,6 @@ input[readonly] {
   .sidebar-close svg {
     width: 18px;
     height: 18px;
-  }
-
-  .logo-row {
-    flex-direction: column;
-    align-items: stretch;
   }
 
   .metrics,
@@ -662,6 +951,46 @@ input[readonly] {
 
   .segmented button { padding: 7px 10px; }
   .sale-product-row { grid-template-columns: 1fr 68px 40px; gap: 8px; }
+}
+
+/* Dedo não é ponteiro: onde o toque é o meio de entrada, o alvo cresce para 44px. */
+@media (pointer: coarse) {
+  .btn,
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+  }
+
+  .icon-button,
+  .sidebar-close {
+    width: 44px;
+    height: 44px;
+  }
+
+  .segmented button {
+    padding: 11px 14px;
+  }
+}
+
+/* A dica da barra depende de hover: sem ponteiro ela nunca aparece, e o rótulo
+   embaixo da barra já carrega o essencial. */
+@media (hover: none) {
+  .bar:hover::after { content: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* A gaveta não desliza: aparece e some. */
+  .sidebar { transition: none; }
 }
 
 .login-shell {
