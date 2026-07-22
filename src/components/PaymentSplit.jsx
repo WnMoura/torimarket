@@ -25,13 +25,14 @@ export function PaymentSplit({ pagamentos, setPagamentos, total }) {
   const remover = (indice) => setPagamentos(pagamentos.filter((_, i) => i !== indice));
 
   return (
-    <Field label="Formas de pagamento" full>
+    <Field label="Formas de pagamento" full group>
       <div className="list">
         {pagamentos.map((parte, indice) => (
           <div className="sale-product-row" key={indice}>
-            <div style={{ display: "flex", gap: 6 }}>
+            <div className="forma-row">
               <select
-                style={{ flex: 1 }}
+                className="grow"
+                aria-label={`Forma de pagamento ${indice + 1}`}
                 value={parte.forma}
                 onChange={(e) => atualizar(indice, "forma", e.target.value)}
               >
@@ -41,8 +42,9 @@ export function PaymentSplit({ pagamentos, setPagamentos, total }) {
               </select>
               {parte.forma === "Crédito" && (
                 <select
-                  style={{ width: 74 }}
+                  className="parcelas"
                   title="Parcelas"
+                  aria-label={`Parcelas da forma ${indice + 1}`}
                   value={parte.parcelas || 1}
                   onChange={(e) => atualizar(indice, "parcelas", Number(e.target.value))}
                 >
@@ -58,6 +60,7 @@ export function PaymentSplit({ pagamentos, setPagamentos, total }) {
               type="number"
               step="0.01"
               min="0"
+              aria-label={`Valor da forma ${indice + 1}`}
               value={parte.valor}
               onChange={(e) => atualizar(indice, "valor", e.target.value)}
             />
@@ -72,11 +75,11 @@ export function PaymentSplit({ pagamentos, setPagamentos, total }) {
         ))}
       </div>
 
-      <div className="list-row" style={{ marginTop: 10 }}>
+      <div className="list-row split-footer">
         <button className="btn" type="button" onClick={adicionar}>
-          <Plus size={16} /> Adicionar forma
+          <Plus aria-hidden="true" /> Adicionar forma
         </button>
-        <span className={fecha ? "positive" : "danger-text"}>
+        <span className={fecha ? "positive" : "danger-text"} role="status">
           {fecha ? "Fecha com o total" : `Falta alocar ${fmtMoney(restante)}`}
         </span>
       </div>

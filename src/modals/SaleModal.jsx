@@ -154,11 +154,17 @@ export function SaleModal({ products, clients, registrarVenda, onError, onClose 
             </select>
           </Field>
 
-          <Field label="Quantidade">
-            <div className="sale-product-row">
-              <input type="number" min="1" value={form.quantidade} onChange={alterar("quantidade")} />
+          <Field label="Quantidade" group>
+            <div className="qty-row">
+              <input
+                type="number"
+                min="1"
+                aria-label="Quantidade"
+                value={form.quantidade}
+                onChange={alterar("quantidade")}
+              />
               <button className="btn" type="button" onClick={adicionarItem}>
-                <Plus size={16} />
+                <Plus aria-hidden="true" /> Adicionar
               </button>
             </div>
           </Field>
@@ -188,7 +194,10 @@ export function SaleModal({ products, clients, registrarVenda, onError, onClose 
           ))}
         </div>
 
-        <h2>Total: {fmtMoney(total)}</h2>
+        <p className="total-line">
+          <span>Total</span>
+          <strong>{fmtMoney(total)}</strong>
+        </p>
 
         <PaymentSplit
           pagamentos={form.pagamentos}

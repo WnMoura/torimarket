@@ -30,7 +30,11 @@ export function Login() {
           <h1>Entrar</h1>
         </div>
 
-        {erro && <div className="alert">{erro}</div>}
+        {erro && (
+          <div className="alert" role="alert">
+            {erro}
+          </div>
+        )}
 
         <Field label="E-mail">
           <input
