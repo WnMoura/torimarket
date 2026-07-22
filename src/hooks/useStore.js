@@ -83,20 +83,23 @@ export function useStore() {
     setError("");
 
     try {
-      const [produtos, clientes, vendas, itens, metas, config, lancamentos] = await Promise.all([
+      const [produtos, clientes, vendas, metas, config, lancamentos] = await Promise.all([
         supabase.from("produtos").select("*").order("criado_em", { ascending: false }),
         supabase.from("clientes").select("*").order("criado_em", { ascending: false }),
+        // `itens_venda` vem aninhado aqui e mais nada: antes ele era baixado duas vezes,
+        // uma dentro da venda e outra numa consulta própria, com o mesmo join em produtos.
+        // `*` no aninhado de propósito: nomear custo_unitario aqui quebraria o carregamento
+        // inteiro em banco sem a migração 001, em vez de só cair no custo atual do produto.
         supabase
           .from("vendas")
-          .select("*, clientes(nome), itens_venda(*, produtos(nome))")
+          .select("*, clientes(nome), itens_venda(*, produtos(nome, custo))")
           .order("criado_em", { ascending: false }),
-        supabase.from("itens_venda").select("*, produtos(nome, custo)"),
         supabase.from("metas").select("*").order("criado_em", { ascending: false }),
         supabase.from("configuracoes").select("*").eq("id", 1).maybeSingle(),
         supabase.from("lancamentos").select("*").order("data", { ascending: false }),
       ]);
 
-      for (const resposta of [produtos, clientes, vendas, itens, metas, config, lancamentos]) {
+      for (const resposta of [produtos, clientes, vendas, metas, config, lancamentos]) {
         if (resposta.error) throw resposta.error;
       }
 
@@ -104,13 +107,16 @@ export function useStore() {
       if (minhaVez !== sequencia.current) return;
 
       const todosProdutos = produtos.data || [];
+      const todasVendas = vendas.data || [];
 
       setData({
         products: todosProdutos.filter(produtoAtivo),
         archivedProducts: todosProdutos.filter((p) => !produtoAtivo(p)),
         clients: clientes.data || [],
-        sales: vendas.data || [],
-        items: itens.data || [],
+        sales: todasVendas,
+        // Todo item pertence a uma venda, então achatar a árvore dá exatamente a mesma
+        // lista que a consulta separada dava — sem a segunda ida ao banco.
+        items: todasVendas.flatMap((venda) => venda.itens_venda || []),
         goals: metas.data || [],
         cash: lancamentos.data || [],
         settings: config.data || CONFIG_PADRAO,
