@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Field, Modal } from "../components/ui";
 import { PaymentSplit } from "../components/PaymentSplit";
-import { salePayments } from "../lib/calc";
+import { contatoDoCliente, salePayments, selecionarCliente } from "../lib/calc";
 import { dayKey, fmtMoney, num } from "../lib/format";
 
 /** Estado inicial a partir da venda: itens não entram aqui, só os metadados editáveis. */
@@ -57,20 +57,18 @@ export function EditSaleModal({ venda, clients, editarVenda, onError, onClose })
             <input
               list="clientes-edit"
               value={form.nome_cliente}
-              onChange={(evento) => {
-                const nome = evento.target.value;
-                const cliente = clients.find((c) => c.nome === nome);
+              onChange={(evento) =>
                 setForm({
                   ...form,
-                  nome_cliente: nome,
-                  cliente_id: cliente?.id || "",
-                  contato: cliente?.contato || form.contato,
-                });
-              }}
+                  ...selecionarCliente(clients, evento.target.value, form.contato),
+                })
+              }
             />
             <datalist id="clientes-edit">
               {clients.map((cliente) => (
-                <option key={cliente.id} value={cliente.nome} />
+                <option key={cliente.id} value={cliente.nome}>
+                  {contatoDoCliente(cliente)}
+                </option>
               ))}
             </datalist>
           </Field>

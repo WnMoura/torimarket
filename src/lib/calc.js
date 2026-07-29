@@ -21,6 +21,23 @@ export function creditRate(settings, parcelas) {
   return num(settings?.taxa_credito);
 }
 
+/** Contato do cliente para a venda: o telefone, ou o e-mail quando não há telefone. */
+export const contatoDoCliente = (cliente) => cliente?.contato || cliente?.email || "";
+
+/**
+ * Cliente escolhido no campo de nome (datalist) e o contato que a venda deve usar.
+ * Com cliente cadastrado, o contato dele manda — inclusive apagando o do cliente
+ * anterior ao trocar a seleção. Sem cliente correspondente, o que foi digitado fica.
+ */
+export function selecionarCliente(clients, nome, contatoAtual) {
+  const cliente = clients.find((c) => c.nome === nome);
+  return {
+    nome_cliente: nome,
+    cliente_id: cliente?.id || "",
+    contato: cliente ? contatoDoCliente(cliente) : contatoAtual,
+  };
+}
+
 export const paymentRate = (settings, forma, parcelas) =>
   forma === "Crédito" ? creditRate(settings, parcelas) : num(settings?.[TAXA_DA_FORMA[forma]]);
 

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Field, IconButton, Modal } from "../components/ui";
 import { PaymentSplit } from "../components/PaymentSplit";
+import { contatoDoCliente, selecionarCliente } from "../lib/calc";
 import { fmtMoney, num, today } from "../lib/format";
 
 const VENDA_VAZIA = {
@@ -140,20 +141,18 @@ export function SaleModal({ products, clients, registrarVenda, onError, onClose 
             <input
               list="clientes"
               value={form.nome_cliente}
-              onChange={(evento) => {
-                const nome = evento.target.value;
-                const cliente = clients.find((c) => c.nome === nome);
+              onChange={(evento) =>
                 setForm({
                   ...form,
-                  nome_cliente: nome,
-                  cliente_id: cliente?.id || "",
-                  contato: cliente?.contato || form.contato,
-                });
-              }}
+                  ...selecionarCliente(clients, evento.target.value, form.contato),
+                })
+              }
             />
             <datalist id="clientes">
               {clients.map((cliente) => (
-                <option key={cliente.id} value={cliente.nome} />
+                <option key={cliente.id} value={cliente.nome}>
+                  {contatoDoCliente(cliente)}
+                </option>
               ))}
             </datalist>
           </Field>
