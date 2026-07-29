@@ -8,8 +8,10 @@ import { useMediaQuery } from "../hooks/useMediaQuery";
 
 const nomesDosProdutos = (venda) =>
   (venda.itens_venda || [])
-    .map((item) => item.produtos?.nome)
-    .filter(Boolean)
+    .filter((item) => item.produtos?.nome)
+    .map((item) =>
+      item.tamanho ? `${item.produtos.nome} (${item.tamanho})` : item.produtos.nome,
+    )
     .join(", ") || "-";
 
 /**

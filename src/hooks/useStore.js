@@ -302,6 +302,7 @@ export function useStore() {
           p_itens: form.itens.map((item) => ({
             produto_id: item.produto_id,
             quantidade: item.quantidade,
+            tamanho: item.tamanho || null,
           })),
           p_pagamentos: form.pagamentos.map((p) => ({
             forma: p.forma,

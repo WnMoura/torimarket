@@ -11,10 +11,21 @@ const VENDA_VAZIA = {
   data_venda: today(),
   observacoes: "",
   produto_id: "",
+  tamanho: "",
   quantidade: 1,
   itens: [],
   pagamentos: [{ forma: "Pix", valor: 0 }],
 };
+
+/** "P,M,G,GG" (campo livre do cadastro) vira a lista de opções do seletor. */
+const tamanhosDoProduto = (produto) =>
+  String(produto?.tamanhos || "")
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+
+/** Mesmo produto em tamanhos diferentes são linhas diferentes do carrinho. */
+const chaveDoItem = (item) => `${item.produto_id}-${item.tamanho || ""}`;
 
 export function SaleModal({ products, clients, registrarVenda, onError, onClose }) {
   // today() no inicializador, não em VENDA_VAZIA: garante a data de hoje mesmo se a aba
@@ -37,9 +48,17 @@ export function SaleModal({ products, clients, registrarVenda, onError, onClose 
     });
   }, [total]);
 
+  const tamanhosDisponiveis = tamanhosDoProduto(produtoPorId[form.produto_id]);
+
   function adicionarItem() {
     const produto = produtoPorId[form.produto_id];
     if (!produto) return;
+
+    const opcoes = tamanhosDoProduto(produto);
+    if (opcoes.length && !form.tamanho) {
+      onError(`Escolha o tamanho de "${produto.nome}".`);
+      return;
+    }
 
     const quantidade = Math.max(1, Math.floor(num(form.quantidade)));
     const jaNoCarrinho = form.itens
@@ -60,27 +79,29 @@ export function SaleModal({ products, clients, registrarVenda, onError, onClose 
     onError("");
     setForm((atual) => {
       const itens = [...atual.itens];
-      const existente = itens.findIndex((item) => item.produto_id === produto.id);
+      const novo = {
+        produto_id: produto.id,
+        nome: produto.nome,
+        tamanho: atual.tamanho || "",
+        quantidade,
+        preco_unitario: num(produto.preco_final),
+      };
+      const existente = itens.findIndex((item) => chaveDoItem(item) === chaveDoItem(novo));
 
       if (existente >= 0) {
         itens[existente] = { ...itens[existente], quantidade: itens[existente].quantidade + quantidade };
       } else {
-        itens.push({
-          produto_id: produto.id,
-          nome: produto.nome,
-          quantidade,
-          preco_unitario: num(produto.preco_final),
-        });
+        itens.push(novo);
       }
 
-      return { ...atual, produto_id: "", quantidade: 1, itens };
+      return { ...atual, produto_id: "", tamanho: "", quantidade: 1, itens };
     });
   }
 
-  function removerItem(produtoId) {
+  function removerItem(chave) {
     setForm((atual) => ({
       ...atual,
-      itens: atual.itens.filter((item) => item.produto_id !== produtoId),
+      itens: atual.itens.filter((item) => chaveDoItem(item) !== chave),
     }));
   }
 
@@ -142,7 +163,13 @@ export function SaleModal({ products, clients, registrarVenda, onError, onClose 
           </Field>
 
           <Field label="Produto">
-            <select value={form.produto_id} onChange={alterar("produto_id")}>
+            <select
+              value={form.produto_id}
+              onChange={(evento) =>
+                // Troca de produto zera o tamanho: as opções são de outro produto agora.
+                setForm({ ...form, produto_id: evento.target.value, tamanho: "" })
+              }
+            >
               <option value="">Selecione</option>
               {products
                 .filter((produto) => num(produto.estoque) > 0)
@@ -151,6 +178,21 @@ export function SaleModal({ products, clients, registrarVenda, onError, onClose 
                     {produto.nome} - {fmtMoney(produto.preco_final)} ({produto.estoque} em estoque)
                   </option>
                 ))}
+            </select>
+          </Field>
+
+          <Field label="Tamanho">
+            <select
+              value={form.tamanho}
+              onChange={alterar("tamanho")}
+              disabled={!tamanhosDisponiveis.length}
+            >
+              <option value="">
+                {tamanhosDisponiveis.length ? "Selecione" : "Sem tamanhos cadastrados"}
+              </option>
+              {tamanhosDisponiveis.map((tamanho) => (
+                <option key={tamanho}>{tamanho}</option>
+              ))}
             </select>
           </Field>
 
@@ -180,13 +222,14 @@ export function SaleModal({ products, clients, registrarVenda, onError, onClose 
 
         <div className="list">
           {form.itens.map((item) => (
-            <div className="list-row" key={item.produto_id}>
+            <div className="list-row" key={chaveDoItem(item)}>
               <span className="grow">
-                {item.nome} x {item.quantidade}
+                {item.nome}
+                {item.tamanho && ` (${item.tamanho})`} x {item.quantidade}
               </span>
               <div className="icon-actions">
                 <strong>{fmtMoney(item.quantidade * item.preco_unitario)}</strong>
-                <IconButton danger title="Remover" onClick={() => removerItem(item.produto_id)}>
+                <IconButton danger title="Remover" onClick={() => removerItem(chaveDoItem(item))}>
                   <Trash2 />
                 </IconButton>
               </div>
