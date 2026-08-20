@@ -1,6 +1,6 @@
-# Empresa Gestor Pro
+# ToriMarket / Empresa Gestor Pro
 
-Painel operacional seguro para vendas, produtos, estoque por variação, clientes, metas e finanças. A aplicação usa Next.js App Router, TypeScript, Supabase Auth/Postgres/Storage e está preparada para hospedagem na Vercel.
+Este repositório reúne o histórico do ToriMarket e a remodelação segura do Empresa Gestor Pro. O runtime principal atual é o Next.js App Router, com TypeScript, Supabase Auth/Postgres/Storage e hospedagem preparada para Vercel. Os arquivos Vite em `src/` e as migrations antigas em `migrations/` foram preservados para referência e compatibilidade histórica.
 
 ## Segurança antes do primeiro deploy
 
@@ -17,28 +17,29 @@ SUPABASE_INITIAL_ADMIN_EMAIL
 
 4. Não publique `.env.local`. Ele já está ignorado pelo Git.
 
-## Banco de dados
+## Banco de dados seguro
 
-Execute primeiro em uma cópia de homologação o arquivo [`supabase/migrations/20260820_secure_gestor_pro.sql`](supabase/migrations/20260820_secure_gestor_pro.sql). A migration:
+Para o runtime Next.js, execute primeiro em homologação o arquivo [`supabase/migrations/20260820_secure_gestor_pro.sql`](supabase/migrations/20260820_secure_gestor_pro.sql). A migration:
 
 - cria empresas, perfis, membros, variações, movimentos e auditoria;
 - associa os registros legados à empresa inicial;
 - cria uma variação padrão por produto sem distribuir estoque entre tamanhos;
-- aplica RLS por empresa e função;
-- exige sessão MFA `aal2` nas policies;
+- aplica RLS por empresa, função e MFA `aal2`;
 - torna o bucket `produtos` privado;
 - registra vendas, baixa de estoque e cancelamento em funções transacionais.
 
+Não execute o `supabase_schema.sql` legado nem as policies `anon_full_*` para novos ambientes. Os arquivos numerados em `migrations/` pertencem ao histórico Vite do ToriMarket; valide a compatibilidade antes de aplicá-los em um banco que receberá o runtime seguro.
+
 O usuário administrador deve existir no Supabase Auth com o mesmo email de `SUPABASE_INITIAL_ADMIN_EMAIL`. No primeiro login com MFA confirmado, o vínculo de administrador é criado na empresa inicial.
 
-## Desenvolvimento
+## Desenvolvimento Next.js
 
 ```powershell
 pnpm install
 pnpm dev
 ```
 
-Validações de produção:
+Validações:
 
 ```powershell
 pnpm run build
@@ -46,9 +47,13 @@ pnpm run lint
 pnpm start
 ```
 
+## Frontend Vite legado
+
+Os arquivos do ToriMarket original permanecem disponíveis para referência. Para executá-lo isoladamente, use o script `dev:torimarket` e aplique somente as migrations compatíveis com aquele frontend, após revisão de segurança.
+
 ## Publicação
 
-Na Vercel, cadastre as quatro variáveis server-side para Preview e Production. Depois de validar a homologação, publique o build e acompanhe login, MFA, erros, vendas, estoque e divergências de totais. Mantenha o backup e o deploy anterior até a validação final.
+Na Vercel, cadastre as variáveis server-side para Preview e Production. Depois de validar a homologação, publique o build e acompanhe autenticação, MFA, erros, vendas, estoque e divergências de totais. Mantenha o backup e o deploy anterior até a validação final.
 
 ## Funcionalidades protegidas
 
@@ -56,4 +61,4 @@ Na Vercel, cadastre as quatro variáveis server-side para Preview e Production. 
 - `gerente`: produtos, estoque, vendas, clientes, metas, caixa, DRE e relatórios;
 - `vendedor`: vendas, clientes, consulta de produtos e estoque.
 
-Todos os uploads são validados no servidor, limitados a 5 MB, reprocessados para WebP e armazenados por chave interna em bucket privado.
+Todos os uploads do runtime Next.js são validados no servidor, limitados a 5 MB, reprocessados para WebP e armazenados por chave interna em bucket privado.

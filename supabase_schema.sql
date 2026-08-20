@@ -6,3 +6,6 @@
 --
 -- A migração remove o acesso anônimo, cria RLS por empresa/função,
 -- configura o bucket privado e adiciona as transações de venda.
+
+-- O schema legado do ToriMarket foi preservado apenas no histórico/migrations.
+-- Não execute policies anon_full_* em novos ambientes.

@@ -1,0 +1,1187 @@
+:root {
+  --bg: #08090b;
+  --rail: #0d0f13;
+  --well: #0c0e12;
+  --well-readonly: #101217;
+  --panel: #121419;
+  --panel-2: #181b22;
+  --panel-3: #20242d;
+  --line: #2b303b;
+  /* Texto sobre o acento branco. */
+  --on-accent: #08090b;
+  --bar-end: #8f98a8;
+  --text: #f7f7f8;
+  --muted: #a7adb8;
+  --soft: #d8dbe1;
+  --accent: #ffffff;
+  --danger: #ff5578;
+  --danger-bg: #3a111d;
+  --danger-ink: #ffd5dd;
+  --green: #37d67a;
+  --yellow: #f5c84b;
+  --blue: #68a6ff;
+  --shadow: 0 18px 60px rgba(0, 0, 0, 0.34);
+
+  /* Poços e contornos das cores semânticas: fundo com a própria cor a 10%, borda a 42%. */
+  --danger-line: rgba(255, 85, 120, 0.42);
+  --danger-wash: rgba(255, 85, 120, 0.1);
+  --yellow-line: rgba(245, 200, 75, 0.4);
+  --yellow-wash: rgba(245, 200, 75, 0.1);
+  --green-line: rgba(55, 214, 122, 0.4);
+
+  /* Escala de camadas, em ordem de leitura. A modal não entra: `<dialog>` vive no top layer. */
+  --z-drawer-scrim: 19;
+  --z-drawer: 20;
+
+  /* Sem isto o navegador trata a página como clara: seletor de data, botão de
+     arquivo e menus nativos saem em tema claro no meio do painel escuro. */
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter Variable", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* Números de mesma largura: coluna de preço não dança a cada dígito. */
+  font-variant-numeric: tabular-nums;
+  -webkit-text-size-adjust: 100%;
+  /* Sem `overflow-x: hidden` de propósito. Ele não impedia a rolagem lateral — só
+     escondia a causa (uma tabela larga demais para a tela). Se algo estourar de novo,
+     é para aparecer no teste, não para ser varrido para baixo do tapete. */
+}
+
+button, input, select, textarea {
+  font: inherit;
+}
+
+button { cursor: pointer; }
+
+/* Anel de foco projetado, um só para todo o sistema: o padrão do navegador some
+   sobre o grafite e não combina com o raio de 8px dos controles. */
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+:where(button, input, select, textarea):disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Título curto não deve quebrar em uma palavra órfã; texto corrido, idem. */
+h1, h2, h3 { text-wrap: balance; }
+p { text-wrap: pretty; }
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 276px;
+  background: var(--rail);
+  border-right: 1px solid var(--line);
+  padding: 22px 16px;
+  z-index: var(--z-drawer);
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 8px 22px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 18px;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 800;
+}
+
+/* Com foto, o círculo é a própria imagem — o fundo branco da inicial sairia como borda. */
+img.avatar {
+  object-fit: cover;
+  background: var(--panel-2);
+}
+
+/* E-mail longo não tem onde quebrar: sem o corte ele passava por baixo do botão Sair. */
+.profile strong,
+.profile span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile span {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+}
+
+/* O botão é do tamanho que é: quem cede espaço é o texto. */
+.profile .icon-button {
+  flex: 0 0 auto;
+}
+
+.nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  margin: 4px 0;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  text-align: left;
+  transition: 0.18s ease;
+}
+
+.nav-item svg {
+  width: 19px;
+  height: 19px;
+  stroke-width: 1.9;
+}
+
+.nav-item:hover,
+.nav-item.active {
+  color: var(--text);
+  background: var(--panel-2);
+  border-color: var(--line);
+}
+
+/* Botão de fechar o menu (só no mobile, onde a sidebar vira gaveta). */
+.sidebar-close {
+  display: none;
+}
+
+/* Fundo escuro atrás da gaveta: tocar nele fecha o menu. */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: var(--z-drawer-scrim);
+}
+
+@media (min-width: 761px) {
+  .sidebar-overlay {
+    display: none;
+  }
+}
+
+/* Campo de imagem: prévia + ações lado a lado, com quebra quando aperta. */
+.image-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  border-radius: 8px;
+}
+
+.image-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.avatar-preview {
+  width: 56px;
+  height: 56px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--line);
+}
+
+/* Sem imagem ainda: um vazio que tem a forma do que vai entrar ali. */
+.image-placeholder {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  background: var(--well);
+}
+
+.image-placeholder.redondo {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+}
+
+.app-shell {
+  margin-left: 276px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 24px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: 0.74rem;
+}
+
+h1, h2, h3, p { margin-top: 0; }
+h1 { margin-bottom: 0; font-size: clamp(1.65rem, 2.4vw, 2.5rem); }
+h2 { font-size: 1.1rem; margin-bottom: 16px; }
+h3 { font-size: 0.98rem; margin-bottom: 10px; }
+
+.business-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--soft);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  padding: 10px 14px;
+  border-radius: 8px;
+}
+
+/* Duas classes de propósito: `.icon-button` também declara `display` e vem depois no
+   arquivo — com uma classe só, ela vencia e o hambúrguer aparecia vazio no desktop. */
+.icon-button.menu-button {
+  display: none;
+}
+
+.menu-button span {
+  display: block;
+  width: 17px;
+  height: 2px;
+  background: var(--text);
+  margin: 2px 0;
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+}
+
+/* Item de grid tem `min-width: auto`: sem isto a tabela de 720px empurra a coluna
+   para fora da viewport em vez de rolar dentro do .table-wrap — e o `overflow-x: hidden`
+   do body corta o excedente em silêncio. */
+.grid > * {
+  min-width: 0;
+}
+
+.metrics {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* Ritmo: as métricas são um grupo, então respiram menos entre si do que entre seções. */
+  gap: 12px;
+}
+
+.metrics-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Primeiro uso: uma coluna estreita de texto, não um card de largura cheia com
+   uma frase perdida no meio. */
+.primeiro-uso {
+  display: grid;
+  justify-items: start;
+  gap: 14px;
+  padding: 28px;
+}
+
+.primeiro-uso p {
+  margin: 0;
+  max-width: 58ch;
+  color: var(--soft);
+  line-height: 1.55;
+}
+
+/* Dia sem venda: recado à esquerda, ação à direita, e quebra em duas linhas quando aperta. */
+.dia-vazio {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dia-vazio strong {
+  display: block;
+  font-size: 1.1rem;
+}
+
+.dia-vazio p {
+  margin: 4px 0 0;
+}
+
+.dia-vazio .btn {
+  flex: 0 0 auto;
+}
+
+.main-grid {
+  grid-template-columns: minmax(0, 1.8fr) minmax(300px, 0.8fr);
+  align-items: start;
+}
+
+.two-col {
+  grid-template-columns: minmax(0, 1.35fr) minmax(310px, 0.65fr);
+  align-items: start;
+}
+
+/* Sem sombra em repouso: o que separa o card do fundo é o degrau de cor mais a régua
+   de 1px. A sombra fica para quem de fato flutua — modal, gaveta e o card de login. */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.metric-card {
+  min-height: 126px;
+}
+
+/* Prejuízo: fundo do poço vermelho, chapado. Gradiente aqui só decorava. */
+.metric-card.danger {
+  background: var(--danger-bg);
+  border-color: var(--danger-line);
+}
+
+.metric-card.danger .metric-value {
+  color: var(--danger);
+}
+
+.metric-label {
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.metric-value {
+  font-size: clamp(1.35rem, 2vw, 2rem);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.metric-sub {
+  color: var(--muted);
+  margin-top: 8px;
+  font-size: 0.9rem;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Campo herda `width: 100%` do estilo global de formulário; dentro do flex isso faz
+   cada um exigir a linha inteira. Aqui eles dividem a linha e só quebram quando aperta. */
+.filters > input,
+.filters > select {
+  width: auto;
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.segmented {
+  display: inline-flex;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--rail);
+}
+
+.segmented button {
+  border: 0;
+  border-radius: 6px;
+  padding: 8px 12px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.segmented button.active {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.chart {
+  height: 280px;
+  display: grid;
+  grid-template-columns: repeat(var(--bars, 7), minmax(26px, 1fr));
+  align-items: end;
+  gap: 12px;
+  padding: 18px 4px 8px;
+  border-top: 1px solid var(--line);
+  position: relative;
+}
+
+.bar-wrap {
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Rótulo da escala, alinhado à direita logo acima da régua que ele descreve. */
+.chart-scale {
+  margin: 0;
+  text-align: right;
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.bar {
+  width: 100%;
+  max-width: 56px;
+  min-height: 8px;
+  border-radius: 7px 7px 3px 3px;
+  background: linear-gradient(180deg, var(--accent), var(--bar-end));
+  position: relative;
+}
+
+/* Zero é um traço na base, não uma barra curta: barra curta sugere "vendeu pouco". */
+.bar.vazia {
+  height: 2px;
+  min-height: 2px;
+  border-radius: 0;
+  background: var(--line);
+}
+
+/* Mês no vermelho: a barra troca de cor, e o selo de variação diz a direção. */
+.bar.negativa {
+  background: linear-gradient(180deg, var(--danger), var(--danger-bg));
+}
+
+.bar-delta {
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.bar:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: var(--accent);
+  color: var(--on-accent);
+  border-radius: 6px;
+  padding: 7px 9px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  z-index: 2;
+}
+
+.bar-label {
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.empty {
+  color: var(--muted);
+  padding: 18px 0;
+  text-align: center;
+}
+
+/* Esqueleto de carregamento: o brilho corre sobre o degrau de cor, sem cor nova. */
+.skeleton {
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--panel-2) 25%, var(--panel-3) 50%, var(--panel-2) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-brilho 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-brilho {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+.skeleton-label { height: 10px; width: 45%; margin-bottom: 18px; }
+.skeleton-value { height: 26px; width: 65%; }
+.skeleton-sub { height: 12px; width: 35%; margin-top: 12px; }
+.skeleton-title { height: 14px; width: 30%; margin-bottom: 18px; }
+.skeleton-chart { height: 244px; }
+.skeleton-row { height: 46px; }
+
+/* Sem movimento: o degrau de cor sozinho já diz "ainda não chegou". */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background: var(--panel-2);
+  }
+}
+
+.list {
+  display: grid;
+  gap: 10px;
+}
+
+.list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  border-radius: 8px;
+}
+
+/* Valor de fechamento (total da venda, saldo do mês): é dado, não é título de seção. */
+.total-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 4px 0 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.total-line span {
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.total-line strong {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+}
+
+/* Rótulo que só o leitor de tela precisa (cabeçalho da coluna de ações). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.muted { color: var(--muted); }
+.strong { font-weight: 800; }
+.positive { color: var(--green); }
+.danger-text { color: var(--danger); }
+
+/* Lista que substitui a tabela no celular: o que importa em cima e à direita,
+   o apoio embaixo. Nenhuma coluna fica fora da tela. */
+.stack-list {
+  display: grid;
+  gap: 10px;
+}
+
+.stack-row {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  border-radius: 8px;
+}
+
+.stack-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* O nome cede espaço; o valor nunca quebra. */
+.stack-head strong:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.stack-head strong:last-child {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* Lista de produtos da venda: duas linhas bastam para reconhecer a venda. */
+.stack-produtos {
+  margin: 0;
+  color: var(--soft);
+  font-size: 0.9rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.stack-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 38px;
+  font-size: 0.9rem;
+}
+
+.stack-foot > .muted {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.stack-estoque {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.table-wrap { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+th, td {
+  padding: 13px 12px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: middle;
+}
+
+th {
+  color: var(--muted);
+  font-size: 0.76rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+td { color: var(--soft); }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.field {
+  display: grid;
+  gap: 7px;
+}
+
+.field.full { grid-column: 1 / -1; }
+
+label {
+  color: var(--soft);
+  font-size: 0.9rem;
+}
+
+input, select, textarea {
+  width: 100%;
+  min-height: 43px;
+  color: var(--text);
+  background: var(--well);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  outline: none;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 92px;
+}
+
+/* A seta do select é desenhada pelo navegador dentro da caixa: sem esta folga,
+   rótulo longo encosta nela. */
+select {
+  padding-right: 32px;
+}
+
+/* O cinza padrão do navegador dá 4,19:1 sobre o poço — abaixo do mínimo de 4,5:1. */
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--text);
+}
+
+input[readonly] {
+  color: var(--muted);
+  background: var(--well-readonly);
+}
+
+.btn {
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-3);
+  color: var(--text);
+  padding: 9px 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn.primary {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+  font-weight: 800;
+}
+
+.btn.danger {
+  border-color: rgba(255, 85, 120, 0.42);
+  color: var(--danger);
+  background: rgba(255, 85, 120, 0.09);
+}
+
+.btn.full { width: 100%; }
+
+/* Tamanho de ícone é regra do sistema, não decisão de cada chamada. */
+.btn svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+
+/* Estados: repouso já existia; faltavam hover e o toque acontecendo. */
+.btn { transition: background 0.15s ease, border-color 0.15s ease; }
+.btn:hover:not(:disabled) { background: var(--line); }
+.btn:active:not(:disabled) { background: var(--panel-2); }
+
+.btn.primary:hover:not(:disabled) { background: var(--soft); border-color: var(--soft); }
+.btn.primary:active:not(:disabled) { background: var(--muted); border-color: var(--muted); }
+
+.btn.danger:hover:not(:disabled) { background: rgba(255, 85, 120, 0.18); }
+
+.icon-button { transition: background 0.15s ease, border-color 0.15s ease; }
+.icon-button:hover:not(:disabled) { background: var(--line); }
+.icon-button.danger:hover:not(:disabled) { background: var(--danger-wash); }
+
+.segmented button { transition: color 0.15s ease, background 0.15s ease; }
+.segmented button:hover:not(.active) { color: var(--text); }
+
+.icon-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-button {
+  width: 38px;
+  height: 38px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-3);
+  color: var(--text);
+}
+
+.icon-button.danger {
+  color: var(--danger);
+  border-color: rgba(255, 85, 120, 0.42);
+}
+
+.icon-button svg { width: 17px; height: 17px; }
+
+.alert {
+  margin-bottom: 16px;
+  padding: 13px 14px;
+  border: 1px solid var(--danger-line);
+  background: var(--danger-wash);
+  color: var(--danger-ink);
+  border-radius: 8px;
+}
+
+.thumb {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+}
+
+.business-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.grow {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Nome de produto/cliente longo não pode empurrar a largura e criar scroll horizontal. */
+.list-row strong,
+.list-row p,
+.list-row span {
+  overflow-wrap: anywhere;
+}
+
+.sale-product-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 92px 42px;
+  gap: 10px;
+}
+
+/* Quantidade + "Adicionar": duas colunas, o botão pega só a largura do texto. */
+.qty-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.forma-row {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+}
+
+.forma-row .parcelas {
+  width: 74px;
+  flex: 0 0 auto;
+}
+
+.split-footer {
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.progress {
+  width: 100%;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--well);
+  border: 1px solid var(--line);
+}
+
+.progress span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--green));
+  width: var(--progress);
+}
+
+/* `<dialog>` no top layer: o navegador cuida do Esc, do foco e do inerte por trás. */
+.modal {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(760px, calc(100vw - 28px));
+  max-height: calc(100vh - 36px);
+  max-height: calc(100dvh - 36px);
+  overflow: auto;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+/* O dialog recebe o foco ao abrir só para anunciar o título; ele não é um controle. */
+.modal:focus-visible {
+  outline: none;
+}
+
+/* Uma pergunta curta não precisa de 760px de caixa. */
+.modal.estreita {
+  width: min(460px, calc(100vw - 28px));
+}
+
+.modal::backdrop {
+  background: rgba(0, 0, 0, 0.72);
+}
+
+/* Com a modal aberta o fundo não rola junto. */
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+
+/* Pergunta destrutiva: texto legível como prosa, ações à direita, destrutiva por último. */
+.confirm-message {
+  margin: 0 0 20px;
+  color: var(--soft);
+  max-width: 62ch;
+  line-height: 1.55;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.modal-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  padding: 4px 8px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+/* A cor reforça o texto, nunca substitui: o rótulo continua dizendo o estado. */
+.status-pill.warn {
+  color: var(--yellow);
+  border-color: var(--yellow-line);
+  background: var(--yellow-wash);
+}
+
+.status-pill.danger {
+  color: var(--danger);
+  border-color: var(--danger-line);
+  background: var(--danger-wash);
+}
+
+@media (max-width: 1120px) {
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .main-grid, .two-col { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 760px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+    padding-top: max(22px, env(safe-area-inset-top));
+    padding-left: max(16px, env(safe-area-inset-left));
+  }
+
+  .sidebar.open { transform: translateX(0); }
+
+  .app-shell {
+    margin-left: 0;
+    padding: 18px;
+    padding-top: max(18px, env(safe-area-inset-top));
+    padding-left: max(18px, env(safe-area-inset-left));
+    padding-right: max(18px, env(safe-area-inset-right));
+    padding-bottom: max(18px, env(safe-area-inset-bottom));
+  }
+
+  /* Hambúrguer à esquerda, título centralizado de verdade (colunas laterais iguais). */
+  .topbar {
+    display: grid;
+    grid-template-columns: 40px 1fr 40px;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .topbar > div {
+    text-align: center;
+  }
+
+  .business-name { display: none; }
+  .icon-button.menu-button {
+    display: inline-grid;
+    flex: 0 0 auto;
+  }
+
+  .sidebar-close {
+    display: grid;
+    place-items: center;
+    margin: 0 0 6px auto;
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel-3);
+    color: var(--text);
+  }
+
+  .sidebar-close svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Empilhado em largura cheia, cada métrica gastava ~200px: eram quase 800px de
+     rolagem para ler quatro números. Duas colunas devolvem metade da tela inicial. */
+  .metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .metric-card {
+    min-height: 0;
+    padding: 13px;
+  }
+
+  /* Rótulo de duas linhas ("Valor em caixa (estoque)") ao lado de um de uma linha
+     empurrava os valores para alturas diferentes. Reservando duas linhas, os quatro
+     números da grade ficam na mesma altura. */
+  .metric-label {
+    margin-bottom: 8px;
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    line-height: 1.25;
+    min-height: 2.5em;
+  }
+
+  .metric-value {
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+    /* Última defesa: valor de seis dígitos quebra em vez de vazar do card. */
+    overflow-wrap: anywhere;
+  }
+
+  .metric-sub { margin-top: 6px; font-size: 0.8rem; }
+
+  /* Dois filtros por linha em vez de três linhas de um. */
+  .filters > input,
+  .filters > select {
+    flex-basis: 140px;
+  }
+
+  .chart { gap: 7px; }
+  .sale-product-row { grid-template-columns: 1fr 74px 42px; }
+}
+
+/* Telas bem pequenas (iPhone SE, celulares ~360px): mais folga de espaço. */
+@media (max-width: 480px) {
+  .app-shell { padding: 14px; padding-bottom: max(14px, env(safe-area-inset-bottom)); }
+  .card { padding: 14px; }
+  .topbar { gap: 12px; margin-bottom: 18px; }
+  h1 { font-size: 1.5rem; }
+
+  .metric-card { min-height: auto; }
+  .metric-label { margin-bottom: 8px; }
+
+  /* Tabela mais compacta para caber mais colunas antes de precisar rolar. */
+  table { min-width: 560px; }
+  th, td { padding: 10px 9px; font-size: 0.9rem; }
+
+  .chart { height: 220px; }
+
+  .modal { padding: 16px; padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+  .modal-head { margin-bottom: 14px; }
+
+  .segmented button { padding: 7px 10px; }
+  .sale-product-row { grid-template-columns: 1fr 68px 40px; gap: 8px; }
+}
+
+/* Dedo não é ponteiro: onde o toque é o meio de entrada, o alvo cresce para 44px. */
+@media (pointer: coarse) {
+  .btn,
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+  }
+
+  .icon-button,
+  .sidebar-close {
+    width: 44px;
+    height: 44px;
+  }
+
+  .segmented button {
+    padding: 11px 14px;
+  }
+}
+
+/* A dica da barra depende de hover: sem ponteiro ela nunca aparece, e o rótulo
+   embaixo da barra já carrega o essencial. */
+@media (hover: none) {
+  .bar:hover::after { content: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* A gaveta não desliza: aparece e some. */
+  .sidebar { transition: none; }
+}
+
+.login-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  display: grid;
+  gap: 18px;
+  box-shadow: var(--shadow);
+}
+
+.login-card h1 {
+  margin: 4px 0 0;
+}
