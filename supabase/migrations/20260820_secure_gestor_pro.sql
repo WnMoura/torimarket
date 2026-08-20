@@ -1,0 +1,352 @@
+-- Empresa Gestor Pro: migration incremental de segurança e integridade.
+-- Execute primeiro em homologação. O arquivo não cria usuário administrador.
+
+create extension if not exists "pgcrypto";
+
+do $$ begin
+  create type public.app_role as enum ('admin', 'gerente', 'vendedor');
+exception when duplicate_object then null;
+end $$;
+
+do $$ begin
+  create type public.sale_status as enum ('concluida', 'cancelada');
+exception when duplicate_object then null;
+end $$;
+
+create table if not exists public.empresas (
+  id uuid primary key default gen_random_uuid(),
+  nome text not null,
+  slug text not null unique,
+  ativo boolean not null default true,
+  criado_em timestamptz not null default now(),
+  atualizado_em timestamptz not null default now()
+);
+
+insert into public.empresas (nome, slug)
+values ('Minha Empresa', 'empresa-inicial')
+on conflict (slug) do nothing;
+
+create table if not exists public.perfis (
+  usuario_id uuid primary key references auth.users(id) on delete cascade,
+  nome text not null default 'Usuário',
+  email text,
+  criado_em timestamptz not null default now(),
+  atualizado_em timestamptz not null default now()
+);
+
+create table if not exists public.membros_empresa (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null references public.empresas(id) on delete cascade,
+  usuario_id uuid not null references auth.users(id) on delete cascade,
+  papel public.app_role not null default 'vendedor',
+  ativo boolean not null default true,
+  criado_em timestamptz not null default now(),
+  unique (empresa_id, usuario_id)
+);
+
+alter table public.produtos add column if not exists empresa_id uuid;
+alter table public.produtos add column if not exists criado_por uuid references auth.users(id);
+alter table public.produtos add column if not exists atualizado_em timestamptz not null default now();
+alter table public.produtos add column if not exists arquivado_em timestamptz;
+
+alter table public.clientes add column if not exists empresa_id uuid;
+alter table public.clientes add column if not exists criado_por uuid references auth.users(id);
+alter table public.clientes add column if not exists atualizado_em timestamptz not null default now();
+alter table public.clientes add column if not exists arquivado_em timestamptz;
+
+alter table public.vendas add column if not exists empresa_id uuid;
+alter table public.vendas add column if not exists criado_por uuid references auth.users(id);
+alter table public.vendas add column if not exists status text not null default 'concluida';
+alter table public.vendas add column if not exists taxa_percentual numeric(7,4) not null default 0;
+alter table public.vendas add column if not exists taxa_valor numeric(14,2) not null default 0;
+alter table public.vendas add column if not exists custo_total numeric(14,2) not null default 0;
+alter table public.vendas add column if not exists cancelado_em timestamptz;
+alter table public.vendas add column if not exists cancelado_por uuid references auth.users(id);
+alter table public.vendas add column if not exists motivo_cancelamento text;
+
+alter table public.itens_venda add column if not exists empresa_id uuid;
+alter table public.itens_venda add column if not exists variacao_id uuid;
+alter table public.itens_venda add column if not exists custo_unitario numeric(14,2) not null default 0;
+
+alter table public.metas add column if not exists empresa_id uuid;
+alter table public.lancamentos add column if not exists empresa_id uuid;
+alter table public.configuracoes add column if not exists empresa_id uuid;
+
+create table if not exists public.variacoes_produto (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null references public.empresas(id) on delete cascade,
+  produto_id uuid not null references public.produtos(id) on delete cascade,
+  sku text not null,
+  tamanho text not null default 'Único',
+  cor text not null default 'Padrão',
+  estoque integer not null default 0 check (estoque >= 0),
+  estoque_minimo integer not null default 5 check (estoque_minimo >= 0),
+  ativo boolean not null default true,
+  criado_em timestamptz not null default now(),
+  atualizado_em timestamptz not null default now(),
+  unique (empresa_id, sku)
+);
+
+create table if not exists public.movimentacoes_estoque (
+  id uuid primary key default gen_random_uuid(),
+  empresa_id uuid not null references public.empresas(id) on delete cascade,
+  variacao_id uuid not null references public.variacoes_produto(id),
+  venda_id uuid references public.vendas(id),
+  tipo text not null check (tipo in ('entrada', 'saida', 'estorno', 'ajuste')),
+  quantidade integer not null check (quantidade > 0),
+  saldo_anterior integer not null check (saldo_anterior >= 0),
+  saldo_novo integer not null check (saldo_novo >= 0),
+  motivo text,
+  criado_por uuid references auth.users(id),
+  criado_em timestamptz not null default now()
+);
+
+create table if not exists public.auditoria (
+  id bigint generated by default as identity primary key,
+  empresa_id uuid not null references public.empresas(id) on delete cascade,
+  usuario_id uuid references auth.users(id),
+  acao text not null,
+  entidade text not null,
+  entidade_id text,
+  detalhes jsonb not null default '{}'::jsonb,
+  criado_em timestamptz not null default now()
+);
+
+do $$
+declare
+  initial_company uuid;
+begin
+  select id into initial_company from public.empresas where slug = 'empresa-inicial' limit 1;
+  update public.produtos set empresa_id = initial_company where empresa_id is null;
+  update public.clientes set empresa_id = initial_company where empresa_id is null;
+  update public.vendas set empresa_id = initial_company where empresa_id is null;
+  update public.itens_venda set empresa_id = initial_company where empresa_id is null;
+  update public.metas set empresa_id = initial_company where empresa_id is null;
+  update public.lancamentos set empresa_id = initial_company where empresa_id is null;
+  update public.configuracoes set empresa_id = initial_company where empresa_id is null;
+end $$;
+
+insert into public.variacoes_produto (empresa_id, produto_id, sku, estoque)
+select p.empresa_id, p.id, 'LEGACY-' || upper(replace(substr(p.id::text, 1, 8), '-', '')), greatest(coalesce(p.estoque, 0), 0)
+from public.produtos p
+where p.empresa_id is not null
+  and not exists (select 1 from public.variacoes_produto v where v.produto_id = p.id);
+
+update public.itens_venda i
+set variacao_id = v.id,
+    empresa_id = coalesce(i.empresa_id, v.empresa_id),
+    custo_unitario = coalesce(i.custo_unitario, p.custo, 0)
+from public.variacoes_produto v
+join public.produtos p on p.id = v.produto_id
+where i.produto_id = v.produto_id and i.variacao_id is null;
+
+create or replace function public.atualizado_em()
+returns trigger language plpgsql set search_path = public as $$
+begin
+  new.atualizado_em = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists produtos_atualizado_em on public.produtos;
+create trigger produtos_atualizado_em before update on public.produtos for each row execute function public.atualizado_em();
+drop trigger if exists variacoes_atualizado_em on public.variacoes_produto;
+create trigger variacoes_atualizado_em before update on public.variacoes_produto for each row execute function public.atualizado_em();
+
+create or replace function public.empresa_atual()
+returns uuid language sql stable security definer set search_path = public as $$
+  select empresa_id from public.membros_empresa where usuario_id = auth.uid() and ativo = true limit 1;
+$$;
+
+create or replace function public.papel_atual()
+returns public.app_role language sql stable security definer set search_path = public as $$
+  select papel from public.membros_empresa where usuario_id = auth.uid() and ativo = true limit 1;
+$$;
+
+create or replace function public.tem_papel(papeis public.app_role[])
+returns boolean language sql stable security definer set search_path = public as $$
+  select coalesce(public.papel_atual() = any(papeis), false);
+$$;
+
+create or replace function public.sessao_mfa()
+returns boolean language sql stable security definer set search_path = public as $$
+  select coalesce(auth.jwt() ->> 'aal' = 'aal2', false);
+$$;
+
+create or replace function public.registrar_venda(
+  p_cliente_id uuid,
+  p_contato text,
+  p_forma_pagamento text,
+  p_observacoes text,
+  p_itens jsonb
+)
+returns uuid language plpgsql security definer set search_path = public as $$
+declare
+  current_company uuid := public.empresa_atual();
+  sale_id uuid;
+  item jsonb;
+  variation record;
+  sale_total numeric(14,2) := 0;
+  sale_cost numeric(14,2) := 0;
+  fee_percent numeric(7,4) := 0;
+  qty integer;
+begin
+  if current_company is null then raise exception 'Usuário sem empresa ativa'; end if;
+  if public.papel_atual() not in ('admin', 'gerente', 'vendedor') then raise exception 'Permissão negada'; end if;
+  if jsonb_array_length(p_itens) < 1 then raise exception 'Venda sem itens'; end if;
+  if p_cliente_id is not null and not exists (select 1 from public.clientes where id = p_cliente_id and empresa_id = current_company and arquivado_em is null) then raise exception 'Cliente inválido'; end if;
+
+  select case p_forma_pagamento
+    when 'Crédito' then coalesce(taxa_credito, 0)
+    when 'Débito' then coalesce(taxa_debito, 0)
+    when 'Pix' then coalesce(taxa_pix, 0)
+    when 'Dinheiro' then coalesce(taxa_dinheiro, 0)
+    else 0 end
+  into fee_percent from public.configuracoes where empresa_id = current_company limit 1;
+
+  insert into public.vendas (empresa_id, cliente_id, contato, forma_pagamento, observacoes, total, status, taxa_percentual)
+  values (current_company, p_cliente_id, left(p_contato, 40), p_forma_pagamento, left(p_observacoes, 2000), 0, 'concluida', fee_percent)
+  returning id into sale_id;
+
+  for item in select * from jsonb_array_elements(p_itens) loop
+    qty := (item->>'quantidade')::integer;
+    select v.*, p.preco_final, p.custo into variation
+    from public.variacoes_produto v join public.produtos p on p.id = v.produto_id
+    where v.id = (item->>'variacao_id')::uuid and v.empresa_id = current_company and v.ativo = true
+    for update;
+    if not found then raise exception 'Variação não encontrada'; end if;
+    if variation.estoque < qty then raise exception 'Estoque insuficiente para %', variation.sku; end if;
+
+    insert into public.itens_venda (empresa_id, venda_id, produto_id, variacao_id, quantidade, preco_unitario, custo_unitario)
+    values (current_company, sale_id, variation.produto_id, variation.id, qty, variation.preco_final, variation.custo);
+    update public.variacoes_produto set estoque = estoque - qty where id = variation.id;
+    insert into public.movimentacoes_estoque (empresa_id, variacao_id, venda_id, tipo, quantidade, saldo_anterior, saldo_novo, motivo, criado_por)
+    values (current_company, variation.id, sale_id, 'saida', qty, variation.estoque, variation.estoque - qty, 'Venda', auth.uid());
+    sale_total := sale_total + (variation.preco_final * qty);
+    sale_cost := sale_cost + (variation.custo * qty);
+  end loop;
+
+  update public.vendas set total = sale_total, custo_total = sale_cost, taxa_valor = round(sale_total * fee_percent / 100, 2) where id = sale_id;
+  insert into public.auditoria (empresa_id, usuario_id, acao, entidade, entidade_id, detalhes)
+  values (current_company, auth.uid(), 'criou', 'venda', sale_id::text, jsonb_build_object('total', sale_total));
+  return sale_id;
+end;
+$$;
+
+create or replace function public.cancelar_venda(p_venda_id uuid, p_motivo text)
+returns void language plpgsql security definer set search_path = public as $$
+declare
+  current_company uuid := public.empresa_atual();
+  sale record;
+  item record;
+  old_stock integer;
+begin
+  if not public.tem_papel(array['admin'::public.app_role, 'gerente'::public.app_role]) then raise exception 'Permissão negada'; end if;
+  select * into sale from public.vendas where id = p_venda_id and empresa_id = current_company for update;
+  if not found or sale.status = 'cancelada' then raise exception 'Venda não encontrada ou já cancelada'; end if;
+  for item in select * from public.itens_venda where venda_id = p_venda_id loop
+    select estoque into old_stock from public.variacoes_produto where id = item.variacao_id for update;
+    update public.variacoes_produto set estoque = estoque + item.quantidade where id = item.variacao_id;
+    insert into public.movimentacoes_estoque (empresa_id, variacao_id, venda_id, tipo, quantidade, saldo_anterior, saldo_novo, motivo, criado_por)
+    values (current_company, item.variacao_id, p_venda_id, 'estorno', item.quantidade, old_stock, old_stock + item.quantidade, left(p_motivo, 500), auth.uid());
+  end loop;
+  update public.vendas set status = 'cancelada', cancelado_em = now(), cancelado_por = auth.uid(), motivo_cancelamento = left(p_motivo, 500) where id = p_venda_id;
+  insert into public.auditoria (empresa_id, usuario_id, acao, entidade, entidade_id, detalhes)
+  values (current_company, auth.uid(), 'cancelou', 'venda', p_venda_id::text, jsonb_build_object('motivo', p_motivo));
+end;
+$$;
+
+alter table public.empresas enable row level security;
+alter table public.perfis enable row level security;
+alter table public.membros_empresa enable row level security;
+alter table public.variacoes_produto enable row level security;
+alter table public.movimentacoes_estoque enable row level security;
+alter table public.auditoria enable row level security;
+alter table public.produtos enable row level security;
+alter table public.clientes enable row level security;
+alter table public.vendas enable row level security;
+alter table public.itens_venda enable row level security;
+alter table public.metas enable row level security;
+alter table public.configuracoes enable row level security;
+alter table public.lancamentos enable row level security;
+
+drop policy if exists anon_full_produtos on public.produtos;
+drop policy if exists anon_full_clientes on public.clientes;
+drop policy if exists anon_full_vendas on public.vendas;
+drop policy if exists anon_full_itens_venda on public.itens_venda;
+drop policy if exists anon_full_metas on public.metas;
+drop policy if exists anon_full_configuracoes on public.configuracoes;
+drop policy if exists anon_full_lancamentos on public.lancamentos;
+drop policy if exists anon_upload_produtos on storage.objects;
+drop policy if exists anon_read_produtos on storage.objects;
+drop policy if exists "membro vê empresa" on public.empresas;
+drop policy if exists "membro vê perfil" on public.perfis;
+drop policy if exists "membro vê associação" on public.membros_empresa;
+drop policy if exists "membro lê produtos" on public.produtos;
+drop policy if exists "gestor altera produtos" on public.produtos;
+drop policy if exists "membro lê variações" on public.variacoes_produto;
+drop policy if exists "gestor altera variações" on public.variacoes_produto;
+drop policy if exists "membro lê clientes" on public.clientes;
+drop policy if exists "equipe altera clientes" on public.clientes;
+drop policy if exists "membro lê vendas" on public.vendas;
+drop policy if exists "membro lê itens" on public.itens_venda;
+drop policy if exists "membro lê metas" on public.metas;
+drop policy if exists "gestor altera metas" on public.metas;
+drop policy if exists "gestor lê configurações" on public.configuracoes;
+drop policy if exists "admin altera configurações" on public.configuracoes;
+drop policy if exists "gestor lê caixa" on public.lancamentos;
+drop policy if exists "gestor altera caixa" on public.lancamentos;
+drop policy if exists "gestor lê movimentos" on public.movimentacoes_estoque;
+drop policy if exists "admin lê auditoria" on public.auditoria;
+drop policy if exists "equipe envia imagem de produto" on storage.objects;
+drop policy if exists "equipe lê imagem de produto" on storage.objects;
+drop policy if exists "gestor remove imagem de produto" on storage.objects;
+
+create policy "membro vê empresa" on public.empresas for select to authenticated using (public.sessao_mfa() and id = public.empresa_atual());
+create policy "membro vê perfil" on public.perfis for select to authenticated using (public.sessao_mfa() and usuario_id = auth.uid());
+create policy "membro vê associação" on public.membros_empresa for select to authenticated using (public.sessao_mfa() and (usuario_id = auth.uid() or empresa_id = public.empresa_atual()));
+
+create policy "membro lê produtos" on public.produtos for select to authenticated using (public.sessao_mfa() and empresa_id = public.empresa_atual() and arquivado_em is null);
+create policy "gestor altera produtos" on public.produtos for all to authenticated using (public.sessao_mfa() and empresa_id = public.empresa_atual() and public.tem_papel(array['admin'::public.app_role, 'gerente'::public.app_role])) with check (public.sessao_mfa() and empresa_id = public.empresa_atual());
+create policy "membro lê variações" on public.variacoes_produto for select to authenticated using (public.sessao_mfa() and empresa_id = public.empresa_atual() and ativo);
+create policy "gestor altera variações" on public.variacoes_produto for all to authenticated using (public.sessao_mfa() and empresa_id = public.empresa_atual() and public.tem_papel(array['admin'::public.app_role, 'gerente'::public.app_role])) with check (public.sessao_mfa() and empresa_id = public.empresa_atual());
+create policy "membro lê clientes" on public.clientes for select to authenticated using (public.sessao_mfa() and empresa_id = public.empresa_atual() and arquivado_em is null);
+create policy "equipe altera clientes" on public.clientes for all to authenticated using (public.sessao_mfa() and empresa_id = public.empresa_atual() and public.tem_papel(array['admin'::public.app_role, 'gerente'::public.app_role, 'vendedor'::public.app_role])) with check (public.sessao_mfa() and empresa_id = public.empresa_atual());
+create policy "membro lê vendas" on public.vendas for select to authenticated using (public.sessao_mfa() and empresa_id = public.empresa_atual());
+create policy "membro lê itens" on public.itens_venda for select to authenticated using (public.sessao_mfa() and empresa_id = public.empresa_atual());
+create policy "membro lê metas" on public.metas for select to authenticated using (public.sessao_mfa() and empresa_id = public.empresa_atual());
+create policy "gestor altera metas" on public.metas for all to authenticated using (public.sessao_mfa() and empresa_id = public.empresa_atual() and public.tem_papel(array['admin'::public.app_role, 'gerente'::public.app_role])) with check (public.sessao_mfa() and empresa_id = public.empresa_atual());
+create policy "gestor lê configurações" on public.configuracoes for select to authenticated using (public.sessao_mfa() and empresa_id = public.empresa_atual() and public.tem_papel(array['admin'::public.app_role, 'gerente'::public.app_role]));
+create policy "admin altera configurações" on public.configuracoes for all to authenticated using (public.sessao_mfa() and empresa_id = public.empresa_atual() and public.papel_atual() = 'admin') with check (public.sessao_mfa() and empresa_id = public.empresa_atual());
+create policy "gestor lê caixa" on public.lancamentos for select to authenticated using (public.sessao_mfa() and empresa_id = public.empresa_atual() and public.tem_papel(array['admin'::public.app_role, 'gerente'::public.app_role]));
+create policy "gestor altera caixa" on public.lancamentos for all to authenticated using (public.sessao_mfa() and empresa_id = public.empresa_atual() and public.tem_papel(array['admin'::public.app_role, 'gerente'::public.app_role])) with check (public.sessao_mfa() and empresa_id = public.empresa_atual());
+create policy "gestor lê movimentos" on public.movimentacoes_estoque for select to authenticated using (public.sessao_mfa() and empresa_id = public.empresa_atual() and public.tem_papel(array['admin'::public.app_role, 'gerente'::public.app_role]));
+create policy "admin lê auditoria" on public.auditoria for select to authenticated using (public.sessao_mfa() and empresa_id = public.empresa_atual() and public.papel_atual() = 'admin');
+
+revoke all on all tables in schema public from anon;
+revoke all on public.auditoria, public.movimentacoes_estoque from authenticated;
+grant select on public.empresas, public.perfis, public.membros_empresa, public.produtos, public.variacoes_produto, public.clientes, public.vendas, public.itens_venda, public.metas, public.configuracoes, public.lancamentos, public.movimentacoes_estoque, public.auditoria to authenticated;
+grant insert, update on public.produtos, public.variacoes_produto, public.clientes, public.metas, public.configuracoes, public.lancamentos to authenticated;
+revoke all on function public.empresa_atual() from public, anon;
+revoke all on function public.papel_atual() from public, anon;
+revoke all on function public.tem_papel(public.app_role[]) from public, anon;
+revoke all on function public.sessao_mfa() from public, anon;
+grant execute on function public.empresa_atual() to authenticated;
+grant execute on function public.papel_atual() to authenticated;
+grant execute on function public.tem_papel(public.app_role[]) to authenticated;
+grant execute on function public.sessao_mfa() to authenticated;
+revoke all on function public.registrar_venda(uuid, text, text, text, jsonb) from public, anon;
+revoke all on function public.cancelar_venda(uuid, text) from public, anon;
+grant execute on function public.registrar_venda(uuid, text, text, text, jsonb) to authenticated;
+grant execute on function public.cancelar_venda(uuid, text) to authenticated;
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('produtos', 'produtos', false, 5242880, array['image/jpeg', 'image/png', 'image/webp'])
+on conflict (id) do update set public = false, file_size_limit = 5242880, allowed_mime_types = excluded.allowed_mime_types;
+
+create policy "equipe envia imagem de produto" on storage.objects for insert to authenticated
+with check (public.sessao_mfa() and bucket_id = 'produtos' and name like public.empresa_atual()::text || '/%' and public.tem_papel(array['admin'::public.app_role, 'gerente'::public.app_role]));
+create policy "equipe lê imagem de produto" on storage.objects for select to authenticated
+using (public.sessao_mfa() and bucket_id = 'produtos' and name like public.empresa_atual()::text || '/%');
+create policy "gestor remove imagem de produto" on storage.objects for delete to authenticated
+using (public.sessao_mfa() and bucket_id = 'produtos' and name like public.empresa_atual()::text || '/%' and public.tem_papel(array['admin'::public.app_role, 'gerente'::public.app_role]));
