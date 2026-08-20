@@ -3,9 +3,11 @@
 -- Este arquivo antigo não contém mais o schema permissivo original.
 -- Execute o arquivo abaixo no Supabase SQL Editor, primeiro em homologação:
 -- supabase/migrations/20260820_secure_gestor_pro.sql
+-- supabase/migrations/20260821_tori_single_company.sql
 --
 -- A migração remove o acesso anônimo, cria RLS por empresa/função,
 -- configura o bucket privado e adiciona as transações de venda.
+-- A segunda migration fixa a empresa Tori e cria o vínculo automático após MFA.
 
 -- O schema legado do ToriMarket foi preservado apenas no histórico/migrations.
 -- Não execute policies anon_full_* em novos ambientes.

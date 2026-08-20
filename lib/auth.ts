@@ -1,5 +1,6 @@
 import "server-only";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { ensureToriMembership } from "@/lib/bootstrap";
 import { Role, can } from "@/lib/permissions";
 
 export type Membership = { userId: string; companyId: string; role: Role; name: string; email: string };
@@ -12,14 +13,16 @@ export async function getMembership(): Promise<Membership | null> {
   const { data: assurance } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
   if (assurance?.currentLevel !== "aal2") throw new Error("MFA_REQUIRED");
 
-  const { data } = await supabase
-    .from("membros_empresa")
-    .select("empresa_id, papel, perfis(nome, email)")
-    .eq("usuario_id", user.id)
-    .eq("ativo", true)
-    .limit(1)
-    .maybeSingle();
+  const readMembership = () => supabase.from("membros_empresa").select("empresa_id, papel, perfis(nome, email)").eq("usuario_id", user.id).eq("ativo", true).limit(1).maybeSingle();
+  let membership = await readMembership();
+  if (membership.error) throw membership.error;
+  if (!membership.data) {
+    await ensureToriMembership();
+    membership = await readMembership();
+    if (membership.error) throw membership.error;
+  }
 
+  const data = membership.data;
   if (!data || !["admin", "gerente", "vendedor"].includes(data.papel)) return null;
   const profile = Array.isArray(data.perfis) ? data.perfis[0] : data.perfis;
   return {

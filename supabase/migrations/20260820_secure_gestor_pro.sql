@@ -1,4 +1,4 @@
--- Empresa Gestor Pro: migration incremental de segurança e integridade.
+-- Tori Gestão: migration incremental de segurança e integridade.
 -- Execute primeiro em homologação. O arquivo não cria usuário administrador.
 
 create extension if not exists "pgcrypto";
@@ -23,7 +23,7 @@ create table if not exists public.empresas (
 );
 
 insert into public.empresas (nome, slug)
-values ('Minha Empresa', 'empresa-inicial')
+values ('Tori', 'tori')
 on conflict (slug) do nothing;
 
 create table if not exists public.perfis (
@@ -116,7 +116,7 @@ do $$
 declare
   initial_company uuid;
 begin
-  select id into initial_company from public.empresas where slug = 'empresa-inicial' limit 1;
+  select id into initial_company from public.empresas where slug = 'tori' limit 1;
   update public.produtos set empresa_id = initial_company where empresa_id is null;
   update public.clientes set empresa_id = initial_company where empresa_id is null;
   update public.vendas set empresa_id = initial_company where empresa_id is null;

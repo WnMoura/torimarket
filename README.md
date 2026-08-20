@@ -1,6 +1,6 @@
-# ToriMarket / Empresa Gestor Pro
+# Tori Gestão
 
-Este repositório reúne o histórico do ToriMarket e a remodelação segura do Empresa Gestor Pro. O runtime principal atual é o Next.js App Router, com TypeScript, Supabase Auth/Postgres/Storage e hospedagem preparada para Vercel. Os arquivos Vite em `src/` e as migrations antigas em `migrations/` foram preservados para referência e compatibilidade histórica.
+Painel operacional exclusivo da Tori. O runtime principal usa Next.js App Router, TypeScript, Supabase Auth/Postgres/Storage e Vercel. Os arquivos Vite em `src/` e as migrations antigas em `migrations/` foram preservados apenas como histórico.
 
 ## Segurança antes do primeiro deploy
 
@@ -19,14 +19,20 @@ SUPABASE_INITIAL_ADMIN_EMAIL
 
 ## Banco de dados seguro
 
-Para o runtime Next.js, execute primeiro em homologação o arquivo [`supabase/migrations/20260820_secure_gestor_pro.sql`](supabase/migrations/20260820_secure_gestor_pro.sql). A migration:
+Para o runtime Next.js, execute em homologação, nesta ordem:
+
+1. [`supabase/migrations/20260820_secure_gestor_pro.sql`](supabase/migrations/20260820_secure_gestor_pro.sql)
+2. [`supabase/migrations/20260821_tori_single_company.sql`](supabase/migrations/20260821_tori_single_company.sql)
+
+As migrations:
 
 - cria empresas, perfis, membros, variações, movimentos e auditoria;
 - associa os registros legados à empresa inicial;
 - cria uma variação padrão por produto sem distribuir estoque entre tamanhos;
-- aplica RLS por empresa, função e MFA `aal2`;
+- fixam a operação na empresa Tori e aplicam RLS por função e MFA `aal2`;
 - torna o bucket `produtos` privado;
-- registra vendas, baixa de estoque e cancelamento em funções transacionais.
+- registram vendas, baixa de estoque e cancelamento em funções transacionais;
+- vinculam automaticamente o primeiro usuário MFA como administrador e os próximos como vendedores.
 
 Não execute o `supabase_schema.sql` legado nem as policies `anon_full_*` para novos ambientes. Os arquivos numerados em `migrations/` pertencem ao histórico Vite do ToriMarket; valide a compatibilidade antes de aplicá-los em um banco que receberá o runtime seguro.
 

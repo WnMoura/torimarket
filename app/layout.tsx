@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Empresa Gestor Pro",
-  description: "Gestão empresarial segura e operacional.",
+  title: "Tori | Gestão",
+  description: "Painel operacional seguro da Tori.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

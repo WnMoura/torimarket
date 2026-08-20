@@ -2,7 +2,6 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { allowRequest } from "@/lib/rate-limit";
-import { ensureInitialAdmin } from "@/lib/bootstrap";
 import { getMembership } from "@/lib/auth";
 import { requireSameOrigin } from "@/lib/http";
 
@@ -29,7 +28,11 @@ export async function POST(request: NextRequest) {
     if (challenge.error) return Response.json({ error: "Não foi possível iniciar a verificação MFA." }, { status: 401 });
     return Response.json({ mfaRequired: true, factorId: verifiedFactor.id, challengeId: challenge.data.id });
   }
-  await ensureInitialAdmin();
-  if (!await getMembership()) return Response.json({ error: "Usuário sem vínculo com uma empresa." }, { status: 403 });
+  try {
+    if (!await getMembership()) return Response.json({ error: "Não foi possível liberar o acesso à Tori." }, { status: 403 });
+  } catch (membershipError) {
+    const message = membershipError instanceof Error ? membershipError.message : "Não foi possível liberar o acesso à Tori.";
+    return Response.json({ error: message }, { status: 500 });
+  }
   return Response.json({ ok: true });
 }

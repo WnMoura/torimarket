@@ -13,7 +13,7 @@ export async function PATCH(request: NextRequest) {
     const parsed = schema.safeParse(await request.json());
     if (!parsed.success) throw new Error("Informe taxas entre 0 e 100%.");
     const supabase = await createSupabaseServerClient();
-    const { error } = await supabase.from("configuracoes").update({ ...parsed.data, empresa_id: membership.companyId }).eq("empresa_id", membership.companyId);
+    const { error } = await supabase.from("configuracoes").update({ ...parsed.data, nome_negocio: "Tori", empresa_id: membership.companyId }).eq("empresa_id", membership.companyId);
     if (error) throw error;
     return ok({ ok: true });
   } catch (error) {

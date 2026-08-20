@@ -1,7 +1,6 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { ensureInitialAdmin } from "@/lib/bootstrap";
 import { getMembership } from "@/lib/auth";
 import { requireSameOrigin } from "@/lib/http";
 
@@ -15,7 +14,7 @@ export async function GET(request: NextRequest) {
   const factors = await supabase.auth.mfa.listFactors();
   const verified = factors.data?.totp?.find((factor) => factor.status === "verified");
   if (verified) return Response.json({ enrolled: true });
-  const enrolled = await supabase.auth.mfa.enroll({ factorType: "totp", friendlyName: "Gestor Pro" });
+  const enrolled = await supabase.auth.mfa.enroll({ factorType: "totp", friendlyName: "Tori Gestão" });
   if (enrolled.error) return Response.json({ error: enrolled.error.message }, { status: 400 });
   return Response.json({ enrolled: false, factorId: enrolled.data.id, qrCode: enrolled.data.totp.qr_code, secret: enrolled.data.totp.secret });
 }
@@ -29,7 +28,11 @@ export async function POST(request: NextRequest) {
   if (!challengeId) return Response.json({ error: "Não foi possível iniciar o desafio MFA." }, { status: 400 });
   const verified = await supabase.auth.mfa.verify({ factorId: body.data.factorId, challengeId, code: body.data.code });
   if (verified.error) return Response.json({ error: "Código MFA incorreto." }, { status: 401 });
-  await ensureInitialAdmin();
-  if (!await getMembership()) return Response.json({ error: "Usuário sem vínculo com uma empresa." }, { status: 403 });
+  try {
+    if (!await getMembership()) return Response.json({ error: "Não foi possível liberar o acesso à Tori." }, { status: 403 });
+  } catch (membershipError) {
+    const message = membershipError instanceof Error ? membershipError.message : "Não foi possível liberar o acesso à Tori.";
+    return Response.json({ error: message }, { status: 500 });
+  }
   return Response.json({ ok: true });
 }
