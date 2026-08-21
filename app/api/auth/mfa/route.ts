@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
   const verified = await supabase.auth.mfa.verify({ factorId: body.data.factorId, challengeId, code: body.data.code });
   if (verified.error) return Response.json({ error: "Código MFA incorreto." }, { status: 401 });
   try {
-    if (!await getMembership()) return Response.json({ error: "Não foi possível liberar o acesso à Tori." }, { status: 403 });
+    if (!await getMembership(supabase)) return Response.json({ error: "Não foi possível liberar o acesso à Tori." }, { status: 403 });
   } catch (membershipError) {
     const message = membershipError instanceof Error ? membershipError.message : "Não foi possível liberar o acesso à Tori.";
     return Response.json({ error: message }, { status: 500 });

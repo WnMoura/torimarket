@@ -1,16 +1,14 @@
 import "server-only";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { env } from "@/lib/env";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const TORI_COMPANY_NAME = "Tori";
 export const TORI_COMPANY_SLUG = "tori";
+export type ProvisionedMembership = { companyId: string; role: "admin" | "gerente" | "vendedor" };
 
-async function provisionWithAdmin() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return false;
-
+async function provisionWithAdmin(user: User): Promise<ProvisionedMembership> {
   const admin = createSupabaseAdminClient();
   const company = await admin.from("empresas").select("id").eq("slug", TORI_COMPANY_SLUG).maybeSingle();
   if (company.error) throw company.error;
@@ -50,21 +48,25 @@ async function provisionWithAdmin() {
   if (member.error) throw member.error;
 
   await admin.from("configuracoes").update({ nome_negocio: TORI_COMPANY_NAME, empresa_id: companyId }).or(`empresa_id.eq.${companyId},empresa_id.is.null`);
-  return true;
+  return { companyId, role };
 }
 
-export async function ensureToriMembership() {
-  const supabase = await createSupabaseServerClient();
+export async function ensureToriMembership(existingClient?: SupabaseClient): Promise<ProvisionedMembership | null> {
+  const supabase = existingClient || await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return false;
+  if (!user) return null;
   const { data: assurance } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
   if (assurance?.currentLevel !== "aal2") throw new Error("MFA_REQUIRED");
 
-  if (env.supabaseSecretKey) return provisionWithAdmin();
+  if (env.supabaseSecretKey) return provisionWithAdmin(user);
 
-  const { error } = await supabase.rpc("vincular_usuario_tori");
+  const { data, error } = await supabase.rpc("vincular_usuario_tori");
   if (error) throw new Error("Aplique a migration de empresa única da Tori ou configure a chave administrativa no servidor.");
-  return true;
+  const provisioned = Array.isArray(data) ? data[0] : data;
+  if (!provisioned?.empresa_id || !["admin", "gerente", "vendedor"].includes(provisioned.papel)) {
+    throw new Error("O banco não confirmou o vínculo com a Tori.");
+  }
+  return { companyId: provisioned.empresa_id, role: provisioned.papel };
 }
 
 // Compatibilidade com imports anteriores durante o deploy gradual.
