@@ -7,16 +7,38 @@ import { requireSameOrigin } from "@/lib/http";
 const verifySchema = z.object({ factorId: z.string().min(1), challengeId: z.string().min(1).optional(), code: z.string().regex(/^\d{6}$/) });
 
 export async function GET(request: NextRequest) {
-  requireSameOrigin(request);
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return Response.json({ error: "Sessão expirada." }, { status: 401 });
-  const factors = await supabase.auth.mfa.listFactors();
-  const verified = factors.data?.totp?.find((factor) => factor.status === "verified");
-  if (verified) return Response.json({ enrolled: true });
-  const enrolled = await supabase.auth.mfa.enroll({ factorType: "totp", friendlyName: "Tori Gestão" });
-  if (enrolled.error) return Response.json({ error: enrolled.error.message }, { status: 400 });
-  return Response.json({ enrolled: false, factorId: enrolled.data.id, qrCode: enrolled.data.totp.qr_code, secret: enrolled.data.totp.secret });
+  try {
+    requireSameOrigin(request);
+    const supabase = await createSupabaseServerClient();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) return Response.json({ error: "Sessão expirada. Entre novamente." }, { status: 401 });
+
+    const factors = await supabase.auth.mfa.listFactors();
+    if (factors.error) return Response.json({ error: "Não foi possível consultar o autenticador." }, { status: 400 });
+
+    const verified = factors.data?.totp?.find((factor) => factor.status === "verified");
+    if (verified) {
+      const challenge = await supabase.auth.mfa.challenge({ factorId: verified.id });
+      if (challenge.error) return Response.json({ error: "Não foi possível iniciar o desafio MFA." }, { status: 400 });
+      return Response.json({ mode: "challenge", factorId: verified.id, challengeId: challenge.data.id });
+    }
+
+    const unverified = factors.data?.all?.filter(
+      (factor) => factor.factor_type === "totp" && factor.status === "unverified",
+    ) || [];
+    await Promise.all(unverified.map((factor) => supabase.auth.mfa.unenroll({ factorId: factor.id })));
+
+    const enrolled = await supabase.auth.mfa.enroll({ factorType: "totp", friendlyName: "Tori Gestão" });
+    if (enrolled.error) return Response.json({ error: "Não foi possível cadastrar o autenticador." }, { status: 400 });
+    return Response.json({
+      mode: "enroll",
+      factorId: enrolled.data.id,
+      qrCode: enrolled.data.totp.qr_code,
+      secret: enrolled.data.totp.secret,
+    });
+  } catch {
+    return Response.json({ error: "Não foi possível preparar a verificação MFA." }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest) {
